@@ -14,7 +14,7 @@ import { BN } from 'bn.js';
 import * as beet from '@metaplex-foundation/beet';
 import { logDebug } from './utils/log';
 import { mintLimitBeet } from './generated/types/MintLimit';
-import { GuardSet, guardSetBeet } from './generated/types/GuardSet';
+import { GuardSet } from './generated/types/GuardSet';
 import { nftPaymentBeet } from './generated/types/NftPayment';
 
 /**

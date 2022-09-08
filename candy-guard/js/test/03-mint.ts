@@ -64,7 +64,6 @@ test('mint (CPI)', async (t) => {
     candyMachine.publicKey,
     payerPair,
     lines,
-    fstTxHandler,
   );
   // confirms that all lines have been written
   for (const tx of txs) {
@@ -147,7 +146,7 @@ test('mint (CPI)', async (t) => {
 
   await wrapTx.assertSuccess(t, [/SetAuthority/i]);
 
-  // minting from the candy machie should fail
+  // minting from the candy machine should fail
 
   try {
     const [, mintKeypair3] = await amman.genLabeledKeypair('CG Mint Account (authority)');
