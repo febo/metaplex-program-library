@@ -5,71 +5,67 @@
  * See: https://github.com/metaplex-foundation/solita
  */
 
-import * as beet from '@metaplex-foundation/beet'
-import * as web3 from '@solana/web3.js'
+import * as beet from '@metaplex-foundation/beet';
+import * as web3 from '@solana/web3.js';
 
 /**
  * @category Instructions
- * @category AddCollection
+ * @category SetCollection
  * @category generated
  */
-export const addCollectionStruct = new beet.BeetArgsStruct<{
-  instructionDiscriminator: number[] /* size: 8 */
+export const setCollectionStruct = new beet.BeetArgsStruct<{
+  instructionDiscriminator: number[] /* size: 8 */;
 }>(
   [['instructionDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)]],
-  'AddCollectionInstructionArgs'
-)
+  'SetCollectionInstructionArgs',
+);
 /**
- * Accounts required by the _addCollection_ instruction
+ * Accounts required by the _setCollection_ instruction
  *
  * @property [_writable_] candyMachine
  * @property [**signer**] authority
  * @property [] updateAuthority
  * @property [**signer**] payer
- * @property [] collectionAuthority
  * @property [] collectionMetadata
  * @property [] collectionMint
- * @property [] collectionEdition
+ * @property [] collectionMasterEdition
  * @property [_writable_] collectionAuthorityRecord
  * @property [] tokenMetadataProgram
  * @category Instructions
- * @category AddCollection
+ * @category SetCollection
  * @category generated
  */
-export type AddCollectionInstructionAccounts = {
-  candyMachine: web3.PublicKey
-  authority: web3.PublicKey
-  updateAuthority: web3.PublicKey
-  payer: web3.PublicKey
-  collectionAuthority: web3.PublicKey
-  collectionMetadata: web3.PublicKey
-  collectionMint: web3.PublicKey
-  collectionEdition: web3.PublicKey
-  collectionAuthorityRecord: web3.PublicKey
-  tokenMetadataProgram: web3.PublicKey
-  systemProgram?: web3.PublicKey
-  rent?: web3.PublicKey
-}
+export type SetCollectionInstructionAccounts = {
+  candyMachine: web3.PublicKey;
+  authority: web3.PublicKey;
+  updateAuthority: web3.PublicKey;
+  payer: web3.PublicKey;
+  collectionMetadata: web3.PublicKey;
+  collectionMint: web3.PublicKey;
+  collectionMasterEdition: web3.PublicKey;
+  collectionAuthorityRecord: web3.PublicKey;
+  tokenMetadataProgram: web3.PublicKey;
+  systemProgram?: web3.PublicKey;
+  rent?: web3.PublicKey;
+};
 
-export const addCollectionInstructionDiscriminator = [
-  79, 172, 225, 142, 219, 192, 171, 80,
-]
+export const setCollectionInstructionDiscriminator = [192, 254, 206, 76, 168, 182, 59, 223];
 
 /**
- * Creates a _AddCollection_ instruction.
+ * Creates a _SetCollection_ instruction.
  *
  * @param accounts that will be accessed while the instruction is processed
  * @category Instructions
- * @category AddCollection
+ * @category SetCollection
  * @category generated
  */
-export function createAddCollectionInstruction(
-  accounts: AddCollectionInstructionAccounts,
-  programId = new web3.PublicKey('cndy3CZK71ZHMp9ddpq5NVvQDx33o6cCYDf4JBAWCk7')
+export function createSetCollectionInstruction(
+  accounts: SetCollectionInstructionAccounts,
+  programId = new web3.PublicKey('cndy3CZK71ZHMp9ddpq5NVvQDx33o6cCYDf4JBAWCk7'),
 ) {
-  const [data] = addCollectionStruct.serialize({
-    instructionDiscriminator: addCollectionInstructionDiscriminator,
-  })
+  const [data] = setCollectionStruct.serialize({
+    instructionDiscriminator: setCollectionInstructionDiscriminator,
+  });
   const keys: web3.AccountMeta[] = [
     {
       pubkey: accounts.candyMachine,
@@ -92,11 +88,6 @@ export function createAddCollectionInstruction(
       isSigner: true,
     },
     {
-      pubkey: accounts.collectionAuthority,
-      isWritable: false,
-      isSigner: false,
-    },
-    {
       pubkey: accounts.collectionMetadata,
       isWritable: false,
       isSigner: false,
@@ -107,7 +98,7 @@ export function createAddCollectionInstruction(
       isSigner: false,
     },
     {
-      pubkey: accounts.collectionEdition,
+      pubkey: accounts.collectionMasterEdition,
       isWritable: false,
       isSigner: false,
     },
@@ -131,12 +122,12 @@ export function createAddCollectionInstruction(
       isWritable: false,
       isSigner: false,
     },
-  ]
+  ];
 
   const ix = new web3.TransactionInstruction({
     programId,
     keys,
     data,
-  })
-  return ix
+  });
+  return ix;
 }

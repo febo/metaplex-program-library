@@ -5,12 +5,9 @@
  * See: https://github.com/metaplex-foundation/solita
  */
 
-import * as beet from '@metaplex-foundation/beet'
-import * as web3 from '@solana/web3.js'
-import {
-  CandyMachineData,
-  candyMachineDataBeet,
-} from '../types/CandyMachineData'
+import * as beet from '@metaplex-foundation/beet';
+import * as web3 from '@solana/web3.js';
+import { CandyMachineData, candyMachineDataBeet } from '../types/CandyMachineData';
 
 /**
  * @category Instructions
@@ -18,8 +15,8 @@ import {
  * @category generated
  */
 export type InitializeInstructionArgs = {
-  data: CandyMachineData
-}
+  data: CandyMachineData;
+};
 /**
  * @category Instructions
  * @category Initialize
@@ -27,15 +24,15 @@ export type InitializeInstructionArgs = {
  */
 export const initializeStruct = new beet.FixableBeetArgsStruct<
   InitializeInstructionArgs & {
-    instructionDiscriminator: number[] /* size: 8 */
+    instructionDiscriminator: number[] /* size: 8 */;
   }
 >(
   [
     ['instructionDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)],
     ['data', candyMachineDataBeet],
   ],
-  'InitializeInstructionArgs'
-)
+  'InitializeInstructionArgs',
+);
 /**
  * Accounts required by the _initialize_ instruction
  *
@@ -43,22 +40,30 @@ export const initializeStruct = new beet.FixableBeetArgsStruct<
  * @property [] authority
  * @property [] updateAuthority
  * @property [**signer**] payer
+ * @property [] collectionMetadata
+ * @property [] collectionMint
+ * @property [] collectionMasterEdition
+ * @property [_writable_] collectionAuthorityRecord
+ * @property [] tokenMetadataProgram
  * @category Instructions
  * @category Initialize
  * @category generated
  */
 export type InitializeInstructionAccounts = {
-  candyMachine: web3.PublicKey
-  authority: web3.PublicKey
-  updateAuthority: web3.PublicKey
-  payer: web3.PublicKey
-  systemProgram?: web3.PublicKey
-  rent?: web3.PublicKey
-}
+  candyMachine: web3.PublicKey;
+  authority: web3.PublicKey;
+  updateAuthority: web3.PublicKey;
+  payer: web3.PublicKey;
+  collectionMetadata: web3.PublicKey;
+  collectionMint: web3.PublicKey;
+  collectionMasterEdition: web3.PublicKey;
+  collectionAuthorityRecord: web3.PublicKey;
+  tokenMetadataProgram: web3.PublicKey;
+  systemProgram?: web3.PublicKey;
+  rent?: web3.PublicKey;
+};
 
-export const initializeInstructionDiscriminator = [
-  175, 175, 109, 31, 13, 152, 155, 237,
-]
+export const initializeInstructionDiscriminator = [175, 175, 109, 31, 13, 152, 155, 237];
 
 /**
  * Creates a _Initialize_ instruction.
@@ -73,12 +78,12 @@ export const initializeInstructionDiscriminator = [
 export function createInitializeInstruction(
   accounts: InitializeInstructionAccounts,
   args: InitializeInstructionArgs,
-  programId = new web3.PublicKey('cndy3CZK71ZHMp9ddpq5NVvQDx33o6cCYDf4JBAWCk7')
+  programId = new web3.PublicKey('cndy3CZK71ZHMp9ddpq5NVvQDx33o6cCYDf4JBAWCk7'),
 ) {
   const [data] = initializeStruct.serialize({
     instructionDiscriminator: initializeInstructionDiscriminator,
     ...args,
-  })
+  });
   const keys: web3.AccountMeta[] = [
     {
       pubkey: accounts.candyMachine,
@@ -101,6 +106,31 @@ export function createInitializeInstruction(
       isSigner: true,
     },
     {
+      pubkey: accounts.collectionMetadata,
+      isWritable: false,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.collectionMint,
+      isWritable: false,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.collectionMasterEdition,
+      isWritable: false,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.collectionAuthorityRecord,
+      isWritable: true,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.tokenMetadataProgram,
+      isWritable: false,
+      isSigner: false,
+    },
+    {
       pubkey: accounts.systemProgram ?? web3.SystemProgram.programId,
       isWritable: false,
       isSigner: false,
@@ -110,12 +140,12 @@ export function createInitializeInstruction(
       isWritable: false,
       isSigner: false,
     },
-  ]
+  ];
 
   const ix = new web3.TransactionInstruction({
     programId,
     keys,
     data,
-  })
-  return ix
+  });
+  return ix;
 }
