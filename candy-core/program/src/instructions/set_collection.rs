@@ -1,7 +1,8 @@
 use anchor_lang::prelude::*;
 use mpl_token_metadata::{
-    assertions::collection::assert_master_edition, instruction::approve_collection_authority,
-    state::Metadata, state::TokenMetadataAccount,
+    assertions::collection::assert_master_edition,
+    instruction::approve_collection_authority,
+    state::{Metadata, TokenMetadataAccount},
 };
 use solana_program::program::invoke;
 
@@ -17,7 +18,7 @@ pub fn set_collection(ctx: Context<SetCollection>) -> Result<()> {
 
     let set_collection_helper_accounts = SetCollectionHelperAccounts {
         payer: ctx.accounts.payer.to_account_info(),
-        update_authority: ctx.accounts.update_authority.to_account_info(),
+        update_authority: /* TODO: should not use the mint_authority */,
         collection_mint: ctx.accounts.collection_mint.to_account_info(),
         collection_metadata: ctx.accounts.collection_metadata.to_account_info(),
         collection_master_edition: ctx.accounts.collection_master_edition.to_account_info(),
@@ -79,35 +80,33 @@ pub fn set_collection_helper(accounts: SetCollectionHelperAccounts) -> Result<()
 }
 
 pub struct SetCollectionHelperAccounts<'info> {
-    /// CHECK:
+    /// CHECK: account checked in CPI
     pub payer: AccountInfo<'info>,
-    /// CHECK:
+    /// CHECK: account checked in CPI
     pub update_authority: AccountInfo<'info>,
-    /// CHECK:
+    /// CHECK: account checked in CPI
     pub collection_mint: AccountInfo<'info>,
-    /// CHECK:
+    /// CHECK: account checked in CPI
     pub collection_metadata: AccountInfo<'info>,
-    /// CHECK:
+    /// CHECK: account checked in CPI
     pub collection_master_edition: AccountInfo<'info>,
-    /// CHECK:
+    /// CHECK: account checked in CPI
     pub collection_authority_record: AccountInfo<'info>,
-    /// CHECK:
+    /// CHECK: account checked in CPI
     pub token_metadata_program: AccountInfo<'info>,
-    /// CHECK:
+    /// CHECK: account checked in CPI
     pub system_program: AccountInfo<'info>,
-    /// CHECK:
+    /// CHECK: account checked in CPI
     pub rent: AccountInfo<'info>,
 }
 
 /// Set the collection PDA for the candy machine
 #[derive(Accounts)]
 pub struct SetCollection<'info> {
-    #[account(mut, has_one = authority, has_one = update_authority)]
+    #[account(mut, has_one = authority)]
     candy_machine: Account<'info, CandyMachine>,
     // candy machine authority
     authority: Signer<'info>,
-    /// CHECK: authority can be any account and is not written to or read
-    update_authority: UncheckedAccount<'info>,
     // payer of the transaction
     payer: Signer<'info>,
     #[account(

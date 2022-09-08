@@ -10,8 +10,8 @@ pub struct CandyMachine {
     pub features: u64,
     /// Authority address.
     pub authority: Pubkey,
-    /// Update authority address to use when retaining authority.
-    pub update_authority: Pubkey,
+    /// Authority address allowed to mint from the candy machine.
+    pub mint_authority: Pubkey,
     /// The collection mint for the candy machine.
     pub collection_mint: Pubkey,
     /// Number of assets redeemed.

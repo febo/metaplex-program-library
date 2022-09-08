@@ -11,6 +11,6 @@ pub fn withdraw<'info>(_ctx: Context<Withdraw<'info>>) -> Result<()> {
 pub struct Withdraw<'info> {
     #[account(mut, close=authority, has_one = authority)]
     candy_machine: Account<'info, CandyMachine>,
-    #[account(mut, address = candy_machine.authority)]
+    #[account(mut)]
     authority: Signer<'info>,
 }

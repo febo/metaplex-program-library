@@ -13,8 +13,8 @@ pub fn wrap(ctx: Context<Wrap>) -> Result<()> {
     // candy machine update_authority CPI
     mpl_candy_machine_core::cpi::set_authority(
         cpi_ctx,
+        ctx.accounts.authority.key(),
         ctx.accounts.candy_guard.key(),
-        ctx.accounts.candy_machine.update_authority,
     )?;
 
     Ok(())

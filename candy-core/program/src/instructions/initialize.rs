@@ -16,7 +16,7 @@ pub fn initialize(ctx: Context<Initialize>, data: CandyMachineData) -> Result<()
         data,
         features: 0,
         authority: ctx.accounts.authority.key(),
-        update_authority: ctx.accounts.update_authority.key(),
+        mint_authority: ctx.accounts.mint_authority.key(),
         collection_mint: ctx.accounts.collection_mint.key(),
         items_redeemed: 0,
     };
@@ -38,7 +38,7 @@ pub fn initialize(ctx: Context<Initialize>, data: CandyMachineData) -> Result<()
 
     let set_collection_helper_accounts = SetCollectionHelperAccounts {
         payer: ctx.accounts.payer.to_account_info(),
-        update_authority: ctx.accounts.update_authority.to_account_info(),
+        update_authority: ctx.accounts.mint_authority.to_account_info(), // TODO: should not use the mint_authority
         collection_mint: ctx.accounts.collection_mint.to_account_info(),
         collection_metadata: ctx.accounts.collection_metadata.to_account_info(),
         collection_master_edition: ctx.accounts.collection_master_edition.to_account_info(),
@@ -69,7 +69,7 @@ pub struct Initialize<'info> {
     // The update authority is used when retain authority is true (in most cases it will
     // be the same as the authority)
     /// CHECK: update authority can be any account and is not written to or read
-    update_authority: UncheckedAccount<'info>,
+    mint_authority: UncheckedAccount<'info>,
     // payer of the transaction
     payer: Signer<'info>,
     /// CHECK: account checked in CPI

@@ -1,11 +1,13 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::Token;
 use arrayref::array_ref;
-use mpl_token_metadata::instruction::{
-    create_master_edition_v3, create_metadata_accounts_v2, set_and_verify_collection,
-    set_and_verify_sized_collection_item, update_metadata_accounts_v2,
+use mpl_token_metadata::{
+    instruction::{
+        create_master_edition_v3, create_metadata_accounts_v2, set_and_verify_collection,
+        set_and_verify_sized_collection_item, update_metadata_accounts_v2,
+    },
+    state::{Metadata, TokenMetadataAccount},
 };
-use mpl_token_metadata::state::{Metadata, TokenMetadataAccount};
 use solana_program::{program::invoke_signed, sysvar};
 
 use crate::{
@@ -17,7 +19,7 @@ use crate::{
 pub fn mint<'info>(ctx: Context<'_, '_, '_, 'info, Mint<'info>>, creator_bump: u8) -> Result<()> {
     // (1) validation
 
-    if !ctx.accounts.metadata.data_is_empty() {
+    if !ctx.accounts.nft_metadata.data_is_empty() {
         return err!(CandyError::MetadataAccountMustBeEmpty);
     }
 
@@ -35,7 +37,7 @@ pub fn mint<'info>(ctx: Context<'_, '_, '_, 'info, Mint<'info>>, creator_bump: u
     }
 
     if !cmp_pubkeys(
-        &ctx.accounts.collection_metadata.owner,
+        ctx.accounts.collection_metadata.owner,
         &mpl_token_metadata::id(),
     ) {
         return err!(CandyError::IncorrectOwner);
@@ -78,9 +80,9 @@ pub fn mint<'info>(ctx: Context<'_, '_, '_, 'info, Mint<'info>>, creator_bump: u
     }
 
     let metadata_infos = vec![
-        ctx.accounts.metadata.to_account_info(),
-        ctx.accounts.mint.to_account_info(),
-        ctx.accounts.mint_authority.to_account_info(),
+        ctx.accounts.nft_metadata.to_account_info(),
+        ctx.accounts.nft_mint.to_account_info(),
+        ctx.accounts.nft_mint_authority.to_account_info(),
         ctx.accounts.payer.to_account_info(),
         ctx.accounts.token_metadata_program.to_account_info(),
         ctx.accounts.token_program.to_account_info(),
@@ -90,11 +92,11 @@ pub fn mint<'info>(ctx: Context<'_, '_, '_, 'info, Mint<'info>>, creator_bump: u
     ];
 
     let master_edition_infos = vec![
-        ctx.accounts.master_edition.to_account_info(),
-        ctx.accounts.mint.to_account_info(),
-        ctx.accounts.mint_authority.to_account_info(),
+        ctx.accounts.nft_master_edition.to_account_info(),
+        ctx.accounts.nft_mint.to_account_info(),
+        ctx.accounts.nft_mint_authority.to_account_info(),
         ctx.accounts.payer.to_account_info(),
-        ctx.accounts.metadata.to_account_info(),
+        ctx.accounts.nft_metadata.to_account_info(),
         ctx.accounts.token_metadata_program.to_account_info(),
         ctx.accounts.token_program.to_account_info(),
         ctx.accounts.system_program.to_account_info(),
@@ -108,9 +110,9 @@ pub fn mint<'info>(ctx: Context<'_, '_, '_, 'info, Mint<'info>>, creator_bump: u
     invoke_signed(
         &create_metadata_accounts_v2(
             ctx.accounts.token_metadata_program.key(),
-            ctx.accounts.metadata.key(),
-            ctx.accounts.mint.key(),
-            ctx.accounts.mint_authority.key(),
+            ctx.accounts.nft_metadata.key(),
+            ctx.accounts.nft_mint.key(),
+            ctx.accounts.nft_mint_authority.key(),
             ctx.accounts.payer.key(),
             candy_machine_creator.key(),
             config_line.name,
@@ -130,11 +132,11 @@ pub fn mint<'info>(ctx: Context<'_, '_, '_, 'info, Mint<'info>>, creator_bump: u
     invoke_signed(
         &create_master_edition_v3(
             ctx.accounts.token_metadata_program.key(),
-            ctx.accounts.master_edition.key(),
-            ctx.accounts.mint.key(),
+            ctx.accounts.nft_master_edition.key(),
+            ctx.accounts.nft_mint.key(),
             candy_machine_creator.key(),
-            ctx.accounts.mint_authority.key(),
-            ctx.accounts.metadata.key(),
+            ctx.accounts.nft_mint_authority.key(),
+            ctx.accounts.nft_metadata.key(),
             ctx.accounts.payer.key(),
             Some(candy_machine.data.max_supply),
         ),
@@ -145,9 +147,9 @@ pub fn mint<'info>(ctx: Context<'_, '_, '_, 'info, Mint<'info>>, creator_bump: u
     invoke_signed(
         &update_metadata_accounts_v2(
             ctx.accounts.token_metadata_program.key(),
-            ctx.accounts.metadata.key(),
+            ctx.accounts.nft_metadata.key(),
             candy_machine_creator.key(),
-            Some(candy_machine.update_authority),
+            Some(candy_machine.mint_authority), // TODO: should not use the mint_authority
             None,
             Some(true),
             if !candy_machine.data.is_mutable {
@@ -158,7 +160,7 @@ pub fn mint<'info>(ctx: Context<'_, '_, '_, 'info, Mint<'info>>, creator_bump: u
         ),
         &[
             ctx.accounts.token_metadata_program.to_account_info(),
-            ctx.accounts.metadata.to_account_info(),
+            ctx.accounts.nft_metadata.to_account_info(),
             candy_machine_creator.to_account_info(),
         ],
         &[&authority_seeds],
@@ -173,10 +175,10 @@ pub fn mint<'info>(ctx: Context<'_, '_, '_, 'info, Mint<'info>>, creator_bump: u
     let set_collection_ix = if collection_metadata_metadata.collection_details.is_some() {
         set_and_verify_sized_collection_item(
             ctx.accounts.token_metadata_program.key(),
-            ctx.accounts.metadata.key(),
-            ctx.accounts.update_authority.key(),
+            ctx.accounts.nft_metadata.key(),
+            ctx.accounts.mint_authority.key(), // TODO: should not use the mint_authority
             ctx.accounts.payer.key(),
-            ctx.accounts.update_authority.key(),
+            ctx.accounts.mint_authority.key(), // TODO: should not use the mint_authority
             collection_mint.key(),
             collection_metadata.key(),
             collection_master_edition.key(),
@@ -185,10 +187,10 @@ pub fn mint<'info>(ctx: Context<'_, '_, '_, 'info, Mint<'info>>, creator_bump: u
     } else {
         set_and_verify_collection(
             ctx.accounts.token_metadata_program.key(),
-            ctx.accounts.metadata.key(),
-            ctx.accounts.update_authority.key(),
+            ctx.accounts.nft_metadata.key(),
+            ctx.accounts.mint_authority.key(), // TODO: should not use the mint_authority
             ctx.accounts.payer.key(),
-            ctx.accounts.update_authority.key(),
+            ctx.accounts.mint_authority.key(), // TODO: should not use the mint_authority
             collection_mint.key(),
             collection_metadata.key(),
             collection_master_edition.key(),
@@ -197,10 +199,10 @@ pub fn mint<'info>(ctx: Context<'_, '_, '_, 'info, Mint<'info>>, creator_bump: u
     };
 
     let set_collection_infos = vec![
-        ctx.accounts.metadata.to_account_info(),
-        ctx.accounts.update_authority.to_account_info(),
+        ctx.accounts.nft_metadata.to_account_info(),
+        ctx.accounts.mint_authority.to_account_info(), // TODO: should not use the mint_authority
         ctx.accounts.payer.to_account_info(),
-        ctx.accounts.update_authority.to_account_info(),
+        ctx.accounts.mint_authority.to_account_info(), // TODO: should not use the mint_authority
         collection_mint.to_account_info(),
         collection_metadata.to_account_info(),
         collection_master_edition.to_account_info(),
@@ -303,29 +305,28 @@ pub fn get_config_line(
 #[derive(Accounts)]
 #[instruction(creator_bump: u8)]
 pub struct Mint<'info> {
-    #[account(mut, has_one = authority, has_one = update_authority)]
+    #[account(mut, has_one = mint_authority)]
     candy_machine: Box<Account<'info, CandyMachine>>,
     /// CHECK: account constraints checked in account trait
     #[account(seeds = [AUTHORITY_SEED.as_bytes(), candy_machine.key().as_ref()], bump = creator_bump)]
     candy_machine_creator: UncheckedAccount<'info>,
     // candy machine authority (mint only allowed for the authority)
-    authority: Signer<'info>,
-    /// CHECK: authority can be any account and is not written to or read
-    update_authority: UncheckedAccount<'info>,
+    mint_authority: Signer<'info>,
     #[account(mut)]
     payer: Signer<'info>,
     // the following accounts aren't using anchor macros because they are CPI'd
     // through to token-metadata which will do all the validations we need on them
     /// CHECK: account checked in CPI
     #[account(mut)]
-    mint: UncheckedAccount<'info>,
-    mint_authority: Signer<'info>,
+    nft_mint: UncheckedAccount<'info>,
+    // authority of the mint account
+    nft_mint_authority: Signer<'info>,
     /// CHECK: account checked in CPI
     #[account(mut)]
-    metadata: UncheckedAccount<'info>,
+    nft_metadata: UncheckedAccount<'info>,
     /// CHECK: account checked in CPI
     #[account(mut)]
-    master_edition: UncheckedAccount<'info>,
+    nft_master_edition: UncheckedAccount<'info>,
     /// CHECK: account checked in CPI
     collection_authority_record: UncheckedAccount<'info>,
     /// CHECK: account checked in CPI
