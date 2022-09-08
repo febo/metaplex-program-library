@@ -26,8 +26,9 @@ import {
 import { Test } from 'tape';
 import * as program from '../../src/generated';
 import { amman } from '.';
-import { getCandyMachineSpace } from '../utils';
+import { COLLECTION_METADATA, getCandyMachineSpace } from '../utils';
 import { CandyMachine, CandyMachineData } from '../../src/generated';
+import { keypairIdentity, Metaplex } from '@metaplex-foundation/js';
 
 const METAPLEX_PROGRAM_ID = new PublicKey('metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s');
 
@@ -92,10 +93,21 @@ export class InitTransactions {
     handler: PayerTransactionHandler,
     connection: Connection,
   ): Promise<{ tx: ConfirmedTransactionAssertablePromise; candyMachine: PublicKey }> {
-    const [_, candyMachine] = await this.getKeypair('Candy Machine Account');
+    // creates a collection nft
+    const metaplex = Metaplex.make(connection).use(keypairIdentity(payer));
 
-    const collectionMint = PublicKey.default;
-    amman.addr.addLabel('Collection Mint', collectionMint);
+    const { nft: collection } = await metaplex
+      .nfts()
+      .create({
+        uri: COLLECTION_METADATA,
+        name: 'CORE Collection',
+        sellerFeeBasisPoints: 500,
+      })
+      .run();
+
+    const [, candyMachine] = await this.getKeypair('Candy Machine Account');
+
+    amman.addr.addLabel('Collection Mint', collection.address);
 
     const updateAuthority = payer.publicKey;
 
@@ -103,7 +115,7 @@ export class InitTransactions {
       [
         Buffer.from('metadata'),
         METAPLEX_PROGRAM_ID.toBuffer(),
-        collectionMint.toBuffer(),
+        collection.address.toBuffer(),
         Buffer.from('collection_authority'),
         updateAuthority.toBuffer(),
       ],
@@ -112,7 +124,7 @@ export class InitTransactions {
     amman.addr.addLabel('Collection Authority Record Master Edition', collectionAuthorityRecord);
 
     const [collectionMetadata] = await PublicKey.findProgramAddress(
-      [Buffer.from('metadata'), METAPLEX_PROGRAM_ID.toBuffer(), collectionMint.toBuffer()],
+      [Buffer.from('metadata'), METAPLEX_PROGRAM_ID.toBuffer(), collection.address.toBuffer()],
       METAPLEX_PROGRAM_ID,
     );
     amman.addr.addLabel('Collection Metadata', collectionMetadata);
@@ -121,7 +133,7 @@ export class InitTransactions {
       [
         Buffer.from('metadata'),
         METAPLEX_PROGRAM_ID.toBuffer(),
-        collectionMint.toBuffer(),
+        collection.address.toBuffer(),
         Buffer.from('edition'),
       ],
       METAPLEX_PROGRAM_ID,
@@ -129,15 +141,15 @@ export class InitTransactions {
     amman.addr.addLabel('Collection Master Edition', collectionMasterEdition);
 
     const accounts: program.InitializeInstructionAccounts = {
-      collectionAuthorityRecord,
-      collectionMasterEdition,
-      collectionMetadata,
-      collectionMint,
-      tokenMetadataProgram: candyMachine.publicKey,
       candyMachine: candyMachine.publicKey,
       authority: payer.publicKey,
       updateAuthority: payer.publicKey,
       payer: payer.publicKey,
+      collectionMetadata,
+      collectionMint: collection.address,
+      collectionMasterEdition,
+      collectionAuthorityRecord,
+      tokenMetadataProgram: METAPLEX_PROGRAM_ID,
       systemProgram: SystemProgram.programId,
       rent: SYSVAR_RENT_PUBKEY,
     };
@@ -171,7 +183,6 @@ export class InitTransactions {
     candyMachine: PublicKey,
     payer: Keypair,
     lines: program.ConfigLine[],
-    handler: PayerTransactionHandler,
   ): Promise<{ txs: Transaction[] }> {
     const accounts: program.AddConfigLinesInstructionAccounts = {
       candyMachine: candyMachine,
@@ -267,10 +278,8 @@ export class InitTransactions {
     );
     amman.addr.addLabel('Mint Master Edition', masterEdition);
 
-    const collectionMint = PublicKey.default;
+    const collectionMint = candyMachineObject.collectionMint;
     amman.addr.addLabel('Collection Mint', collectionMint);
-
-    const updateAuthority = payer.publicKey;
 
     const [collectionAuthorityRecord] = await PublicKey.findProgramAddress(
       [
@@ -278,7 +287,7 @@ export class InitTransactions {
         METAPLEX_PROGRAM_ID.toBuffer(),
         collectionMint.toBuffer(),
         Buffer.from('collection_authority'),
-        updateAuthority.toBuffer(),
+        candyMachineObject.updateAuthority.toBuffer(),
       ],
       METAPLEX_PROGRAM_ID,
     );
@@ -302,20 +311,19 @@ export class InitTransactions {
     amman.addr.addLabel('Collection Master Edition', collectionMasterEdition);
 
     const accounts: program.MintInstructionAccounts = {
-      // TODO: fix the collection accounts
-      collectionAuthorityRecord,
-      collectionMasterEdition,
-      collectionMetadata,
-      collectionMint,
       candyMachine: candyMachine,
+      candyMachineCreator: candyMachineCreator,
       authority: candyMachineObject.authority,
       updateAuthority: candyMachineObject.updateAuthority,
-      candyMachineCreator: candyMachineCreator,
-      masterEdition: masterEdition,
-      metadata: metadataAddress,
+      payer: payer.publicKey,
       mint: mint,
       mintAuthority: payer.publicKey,
-      payer: payer.publicKey,
+      metadata: metadataAddress,
+      masterEdition: masterEdition,
+      collectionAuthorityRecord,
+      collectionMint,
+      collectionMetadata,
+      collectionMasterEdition,
       tokenMetadataProgram: METAPLEX_PROGRAM_ID,
       tokenProgram: TOKEN_PROGRAM_ID,
       systemProgram: SystemProgram.programId,

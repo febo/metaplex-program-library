@@ -52,7 +52,7 @@ test('add_config_lines', async (t) => {
 
     lines[i] = line;
   }
-  const { txs } = await init.addConfigLines(t, address, payerPair, lines, fstTxHandler);
+  const { txs } = await init.addConfigLines(t, address, payerPair, lines);
   // confirms that all lines have been written
   for (const tx of txs) {
     await fstTxHandler
@@ -106,7 +106,7 @@ test('add_config_lines (hidden settings)', async (t) => {
 
     lines[i] = line;
   }
-  const { txs } = await init.addConfigLines(t, address, payerPair, lines, fstTxHandler);
+  const { txs } = await init.addConfigLines(t, address, payerPair, lines);
   // this should fail since hiddenSettings do not have config lines
   for (const tx of txs) {
     await fstTxHandler

@@ -53,7 +53,7 @@ test('mint (authority)', async (t) => {
     lines[i] = line;
   }
 
-  const { txs } = await init.addConfigLines(t, address, payerPair, lines, fstTxHandler);
+  const { txs } = await init.addConfigLines(t, address, payerPair, lines);
   // this should fail since hiddenSettings do not have config lines
   for (const tx of txs) {
     await fstTxHandler
@@ -113,7 +113,7 @@ test('mint (minter)', async (t) => {
     lines[i] = line;
   }
 
-  const { txs } = await init.addConfigLines(t, address, payerPair, lines, fstTxHandler);
+  const { txs } = await init.addConfigLines(t, address, payerPair, lines);
   // this should fail since hiddenSettings do not have config lines
   for (const tx of txs) {
     await fstTxHandler
