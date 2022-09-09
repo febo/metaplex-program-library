@@ -21,7 +21,7 @@
         {
           "name": "authority",
           "isMut": false,
-          "isSigner": true
+          "isSigner": false
         },
         {
           "name": "payer",
@@ -90,11 +90,6 @@
           "isSigner": true
         },
         {
-          "name": "nftMintUpdateAuthority",
-          "isMut": false,
-          "isSigner": true
-        },
-        {
           "name": "nftMasterEdition",
           "isMut": true,
           "isSigner": false
@@ -156,10 +151,6 @@
         }
       ],
       "args": [
-        {
-          "name": "authorityPdaBump",
-          "type": "u8"
-        },
         {
           "name": "mintArgs",
           "type": "bytes"

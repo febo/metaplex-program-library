@@ -15,7 +15,6 @@ import * as web3 from '@solana/web3.js';
  * @category generated
  */
 export type MintInstructionArgs = {
-  authorityPdaBump: number;
   mintArgs: Uint8Array;
 };
 /**
@@ -30,7 +29,6 @@ export const mintStruct = new beet.FixableBeetArgsStruct<
 >(
   [
     ['instructionDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)],
-    ['authorityPdaBump', beet.u8],
     ['mintArgs', beet.bytes],
   ],
   'MintInstructionArgs',
@@ -46,7 +44,6 @@ export const mintStruct = new beet.FixableBeetArgsStruct<
  * @property [_writable_] nftMetadata
  * @property [_writable_] nftMint
  * @property [**signer**] nftMintAuthority
- * @property [**signer**] nftMintUpdateAuthority
  * @property [_writable_] nftMasterEdition
  * @property [] collectionAuthorityRecord
  * @property [] collectionMint
@@ -69,7 +66,6 @@ export type MintInstructionAccounts = {
   nftMetadata: web3.PublicKey;
   nftMint: web3.PublicKey;
   nftMintAuthority: web3.PublicKey;
-  nftMintUpdateAuthority: web3.PublicKey;
   nftMasterEdition: web3.PublicKey;
   collectionAuthorityRecord: web3.PublicKey;
   collectionMint: web3.PublicKey;
@@ -143,11 +139,6 @@ export function createMintInstruction(
     },
     {
       pubkey: accounts.nftMintAuthority,
-      isWritable: false,
-      isSigner: true,
-    },
-    {
-      pubkey: accounts.nftMintUpdateAuthority,
       isWritable: false,
       isSigner: true,
     },

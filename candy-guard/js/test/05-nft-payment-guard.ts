@@ -1,27 +1,17 @@
 import test from 'tape';
 import { amman, InitTransactions, killStuckProcess } from './setup';
 import { Metaplex, keypairIdentity } from '@metaplex-foundation/js';
-import { COLLECTION_METADATA } from '../../../candy-core/js/test/utils';
 import { AccountMeta, PublicKey } from '@solana/web3.js';
 import { ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import { METAPLEX_PROGRAM_ID } from './utils';
+import { CandyMachine } from '../../../candy-core/js/src/generated';
 
 const API = new InitTransactions();
 
 killStuckProcess();
 
-test('nft payment (burn)', async (t) => {
+test.only('nft payment (burn)', async (t) => {
   const { fstTxHandler, payerPair, connection } = await API.payer();
-  const metaplex = Metaplex.make(connection).use(keypairIdentity(payerPair));
-
-  const { nft: collection } = await metaplex
-    .nfts()
-    .create({
-      uri: COLLECTION_METADATA,
-      name: 'CORE Collection',
-      sellerFeeBasisPoints: 500,
-    })
-    .run();
 
   const data = {
     default: {
@@ -48,7 +38,6 @@ test('nft payment (burn)', async (t) => {
     payerPair,
     fstTxHandler,
     connection,
-    collection.address,
   );
 
   // mint (as an authority)
@@ -62,11 +51,12 @@ test('nft payment (burn)', async (t) => {
     mintForAuthority,
     fstTxHandler,
     connection,
-    collection.address,
   );
   await authorityMintTx.assertSuccess(t);
 
   // enables the nft_payment guard
+
+  const candyMachineObject = await CandyMachine.fromAccountAddress(connection, candyMachine);
 
   const updatedData = {
     default: {
@@ -84,7 +74,7 @@ test('nft payment (burn)', async (t) => {
       mintLimit: null,
       nftPayment: {
         burn: true,
-        requiredCollection: collection.address,
+        requiredCollection: candyMachineObject.collectionMint,
         wallet: candyGuard,
       },
     },
@@ -110,11 +100,15 @@ test('nft payment (burn)', async (t) => {
     mintForMinter,
     minterHandler,
     minterConnection,
-    collection.address,
   );
   await minterMintTx.assertError(t, /Missing expected remaining account/i);
 
+  const metaplex = Metaplex.make(connection).use(keypairIdentity(payerPair));
   const nft = await metaplex.nfts().findByMint({ mintAddress: mintForAuthority.publicKey }).run();
+  const collection = await metaplex
+    .nfts()
+    .findByMint({ mintAddress: candyMachineObject.collectionMint })
+    .run();
   const paymentGuardAccounts: AccountMeta[] = [];
 
   // token account
@@ -174,24 +168,13 @@ test('nft payment (burn)', async (t) => {
     mintForAuthority2,
     fstTxHandler,
     connection,
-    collection.address,
     paymentGuardAccounts,
   );
   await authorityMintTx2.assertSuccess(t);
 });
 
-test('nft payment (transfer)', async (t) => {
+test('nft payment as minter (burn)', async (t) => {
   const { fstTxHandler, payerPair, connection } = await API.payer();
-  const metaplex = Metaplex.make(connection).use(keypairIdentity(payerPair));
-
-  const { nft: collection } = await metaplex
-    .nfts()
-    .create({
-      uri: COLLECTION_METADATA,
-      name: 'CORE Collection',
-      sellerFeeBasisPoints: 500,
-    })
-    .run();
 
   const data = {
     default: {
@@ -218,7 +201,6 @@ test('nft payment (transfer)', async (t) => {
     payerPair,
     fstTxHandler,
     connection,
-    collection.address,
   );
 
   // mint (as a minter)
@@ -237,11 +219,158 @@ test('nft payment (transfer)', async (t) => {
     mintForMinter,
     minterHandler,
     minterConnection,
-    collection.address,
   );
   await minterMintTx.assertSuccess(t);
 
   // enables the nft_payment guard
+
+  const candyMachineObject = await CandyMachine.fromAccountAddress(connection, candyMachine);
+
+  const updatedData = {
+    default: {
+      botTax: null,
+      liveDate: {
+        date: 1662479807,
+      },
+      lamports: null,
+      splToken: null,
+      thirdPartySigner: null,
+      whitelist: null,
+      gatekeeper: null,
+      endSettings: null,
+      allowList: null,
+      mintLimit: null,
+      nftPayment: {
+        burn: true,
+        requiredCollection: candyMachineObject.collectionMint,
+      },
+    },
+    groups: null,
+  };
+
+  const { tx: updateTx } = await API.update(t, candyGuard, updatedData, payerPair, fstTxHandler);
+  await updateTx.assertSuccess(t);
+
+  // mint (as a minter)
+
+  const metaplex = Metaplex.make(connection).use(keypairIdentity(payerPair));
+  const nft = await metaplex.nfts().findByMint({ mintAddress: mintForMinter.publicKey }).run();
+  const collection = await metaplex
+    .nfts()
+    .findByMint({ mintAddress: candyMachineObject.collectionMint })
+    .run();
+  const paymentGuardAccounts: AccountMeta[] = [];
+
+  // token account
+  const [tokenAccount] = await PublicKey.findProgramAddress(
+    [minter.publicKey.toBuffer(), TOKEN_PROGRAM_ID.toBuffer(), mintForMinter.publicKey.toBuffer()],
+    ASSOCIATED_TOKEN_PROGRAM_ID,
+  );
+  paymentGuardAccounts.push({
+    pubkey: tokenAccount,
+    isSigner: false,
+    isWritable: true,
+  });
+  // tokent metadata
+  paymentGuardAccounts.push({
+    pubkey: nft.metadataAddress,
+    isSigner: false,
+    isWritable: true,
+  });
+  // token edition
+  const [tokenEdition] = await PublicKey.findProgramAddress(
+    [
+      Buffer.from('metadata'),
+      METAPLEX_PROGRAM_ID.toBuffer(),
+      mintForMinter.publicKey.toBuffer(),
+      Buffer.from('edition'),
+    ],
+    METAPLEX_PROGRAM_ID,
+  );
+  paymentGuardAccounts.push({
+    pubkey: tokenEdition,
+    isSigner: false,
+    isWritable: true,
+  });
+  // mint account
+  paymentGuardAccounts.push({
+    pubkey: nft.address,
+    isSigner: false,
+    isWritable: true,
+  });
+  // mint collection
+  paymentGuardAccounts.push({
+    pubkey: collection.metadataAddress,
+    isSigner: false,
+    isWritable: true,
+  });
+
+  const [, mintForMinter2] = await amman.genLabeledKeypair('Mint Account 2 (minter)');
+  const { tx: minterMintTx2 } = await API.mint(
+    t,
+    candyGuard,
+    candyMachine,
+    minter,
+    mintForMinter2,
+    fstTxHandler,
+    connection,
+    paymentGuardAccounts,
+  );
+  await minterMintTx2.assertSuccess(t);
+});
+
+test('nft payment (transfer)', async (t) => {
+  const { fstTxHandler, payerPair, connection } = await API.payer();
+
+  const data = {
+    default: {
+      botTax: null,
+      liveDate: {
+        date: 1662479807,
+      },
+      lamports: null,
+      splToken: null,
+      thirdPartySigner: null,
+      whitelist: null,
+      gatekeeper: null,
+      endSettings: null,
+      allowList: null,
+      mintLimit: null,
+      nftPayment: null,
+    },
+    groups: null,
+  };
+
+  const { candyGuard, candyMachine } = await API.deploy(
+    t,
+    data,
+    payerPair,
+    fstTxHandler,
+    connection,
+  );
+
+  // mint (as a minter)
+
+  const {
+    fstTxHandler: minterHandler,
+    minterPair: minter,
+    connection: minterConnection,
+  } = await API.minter();
+  const [, mintForMinter] = await amman.genLabeledKeypair('Mint Account (minter)');
+  const { tx: minterMintTx } = await API.mint(
+    t,
+    candyGuard,
+    candyMachine,
+    minter,
+    mintForMinter,
+    minterHandler,
+    minterConnection,
+  );
+  await minterMintTx.assertSuccess(t);
+
+  // enables the nft_payment guard
+
+  const candyMachineObject = await CandyMachine.fromAccountAddress(connection, candyMachine);
 
   const updatedData = {
     default: {
@@ -259,7 +388,7 @@ test('nft payment (transfer)', async (t) => {
       mintLimit: null,
       nftPayment: {
         burn: false,
-        requiredCollection: collection.address,
+        requiredCollection: candyMachineObject.collectionMint,
       },
     },
     groups: null,
@@ -279,10 +408,10 @@ test('nft payment (transfer)', async (t) => {
     mintForMinter2,
     minterHandler,
     minterConnection,
-    collection.address,
   );
   await minterMintTx2.assertError(t, /Missing expected remaining account/i);
 
+  const metaplex = Metaplex.make(connection).use(keypairIdentity(payerPair));
   const nft = await metaplex.nfts().findByMint({ mintAddress: mintForMinter.publicKey }).run();
   const paymentGuardAccounts: AccountMeta[] = [];
 
@@ -324,7 +453,6 @@ test('nft payment (transfer)', async (t) => {
     mintForMinter3,
     minterHandler,
     minterConnection,
-    collection.address,
     paymentGuardAccounts,
   );
   await minterMintTx3.assertSuccess(t);

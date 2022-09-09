@@ -59,12 +59,7 @@ test('mint (CPI)', async (t) => {
 
     lines.push(line);
   }
-  const { txs } = await HELPER.addConfigLines(
-    t,
-    candyMachine.publicKey,
-    payerPair,
-    lines,
-  );
+  const { txs } = await HELPER.addConfigLines(t, candyMachine.publicKey, payerPair, lines);
   // confirms that all lines have been written
   for (const tx of txs) {
     await fstTxHandler
