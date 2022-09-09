@@ -1,12 +1,12 @@
 use anchor_lang::prelude::*;
 
-use errors::CandyError;
+pub use errors::CandyError;
 use instructions::*;
 pub use state::*;
 pub use utils::*;
 
 pub mod constants;
-mod errors;
+pub mod errors;
 mod instructions;
 mod state;
 mod utils;
@@ -27,17 +27,12 @@ pub mod candy_machine_core {
     }
 
     /// Initialize the candy machine account with the specified data.
-    pub fn initialize(
-        ctx: Context<Initialize>,
-        data: CandyMachineData,
-    ) -> Result<()> {
+    pub fn initialize(ctx: Context<Initialize>, data: CandyMachineData) -> Result<()> {
         instructions::initialize(ctx, data)
     }
 
     /// Mint an NFT. Only the candy machine authority is allowed to mint.
-    pub fn mint<'info>(
-        ctx: Context<'_, '_, '_, 'info, Mint<'info>>,
-    ) -> Result<()> {
+    pub fn mint<'info>(ctx: Context<'_, '_, '_, 'info, Mint<'info>>) -> Result<()> {
         instructions::mint(ctx)
     }
 
