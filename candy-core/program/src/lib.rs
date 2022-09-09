@@ -30,9 +30,8 @@ pub mod candy_machine_core {
     pub fn initialize(
         ctx: Context<Initialize>,
         data: CandyMachineData,
-        authority_pda_bump: u8,
     ) -> Result<()> {
-        instructions::initialize(ctx, data, authority_pda_bump)
+        instructions::initialize(ctx, data)
     }
 
     /// Mint an NFT. Only the candy machine authority is allowed to mint.

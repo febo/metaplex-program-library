@@ -112,10 +112,6 @@
           "type": {
             "defined": "CandyMachineData"
           }
-        },
-        {
-          "name": "authorityPdaBump",
-          "type": "u8"
         }
       ]
     },

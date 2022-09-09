@@ -16,7 +16,6 @@ import { CandyMachineData, candyMachineDataBeet } from '../types/CandyMachineDat
  */
 export type InitializeInstructionArgs = {
   data: CandyMachineData;
-  authorityPdaBump: number;
 };
 /**
  * @category Instructions
@@ -31,7 +30,6 @@ export const initializeStruct = new beet.FixableBeetArgsStruct<
   [
     ['instructionDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)],
     ['data', candyMachineDataBeet],
-    ['authorityPdaBump', beet.u8],
   ],
   'InitializeInstructionArgs',
 );

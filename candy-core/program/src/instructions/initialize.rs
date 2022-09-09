@@ -12,7 +12,6 @@ use crate::{
 pub fn initialize(
     ctx: Context<Initialize>,
     data: CandyMachineData,
-    _authority_pda_bump: u8,
 ) -> Result<()> {
     let candy_machine_account = &mut ctx.accounts.candy_machine;
 
@@ -40,7 +39,7 @@ pub fn initialize(
         account_data[HIDDEN_SECTION..HIDDEN_SECTION + 4].copy_from_slice(&u32::MIN.to_le_bytes());
     }
 
-    let approve_collection_authority_helper_accounts = ApproveCollectionAuthorityHelperAccounts {
+    let approve_accounts = ApproveCollectionAuthorityHelperAccounts {
         payer: ctx.accounts.payer.to_account_info(),
         authority_pda: ctx.accounts.authority_pda.to_account_info(),
         collection_mint: ctx.accounts.collection_mint.to_account_info(),
@@ -53,14 +52,14 @@ pub fn initialize(
         collection_update_authority: ctx.accounts.collection_update_authority.to_account_info(),
     };
 
-    approve_collection_authority_helper(approve_collection_authority_helper_accounts)?;
+    approve_collection_authority_helper(approve_accounts)?;
 
     Ok(())
 }
 
 /// Create a new candy machine.
 #[derive(Accounts)]
-#[instruction(data: CandyMachineData, authority_pda_bump: u8)]
+#[instruction(data: CandyMachineData)]
 pub struct Initialize<'info> {
     /// CHECK: account constraints checked in account trait
     #[account(
@@ -71,8 +70,9 @@ pub struct Initialize<'info> {
     candy_machine: UncheckedAccount<'info>,
     /// CHECK: account checked in seeds constraint
     #[account(
-        mut, seeds = [AUTHORITY_SEED.as_bytes(), candy_machine.to_account_info().key.as_ref()],
-        bump = authority_pda_bump
+        mut,
+        seeds = [AUTHORITY_SEED.as_bytes(), candy_machine.to_account_info().key.as_ref()],
+        bump
     )]
     authority_pda: UncheckedAccount<'info>,
     /// CHECK: authority can be any account and is not written to or read

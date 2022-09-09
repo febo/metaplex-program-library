@@ -114,7 +114,7 @@ export class InitTransactions {
       .run();
 
     const [, candyMachine] = await this.getKeypair('Candy Machine Account');
-    const authorityPda = findCandyMachineCreatorPda(candyMachine.publicKey);
+    const authorityPda = findCandyMachineCreatorPda(candyMachine.publicKey, program.PROGRAM_ID);
 
     await amman.addr.addLabel('Collection Mint', collection.address);
 
@@ -147,7 +147,6 @@ export class InitTransactions {
     };
 
     const args: program.InitializeInstructionArgs = {
-      authorityPdaBump: authorityPda.bump,
       data: data,
     };
 
