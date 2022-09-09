@@ -13,10 +13,23 @@ import * as web3 from '@solana/web3.js';
  * @category SetCollection
  * @category generated
  */
-export const setCollectionStruct = new beet.BeetArgsStruct<{
-  instructionDiscriminator: number[] /* size: 8 */;
-}>(
-  [['instructionDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)]],
+export type SetCollectionInstructionArgs = {
+  authorityPdaBump: number;
+};
+/**
+ * @category Instructions
+ * @category SetCollection
+ * @category generated
+ */
+export const setCollectionStruct = new beet.BeetArgsStruct<
+  SetCollectionInstructionArgs & {
+    instructionDiscriminator: number[] /* size: 8 */;
+  }
+>(
+  [
+    ['instructionDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)],
+    ['authorityPdaBump', beet.u8],
+  ],
   'SetCollectionInstructionArgs',
 );
 /**
@@ -24,12 +37,16 @@ export const setCollectionStruct = new beet.BeetArgsStruct<{
  *
  * @property [_writable_] candyMachine
  * @property [**signer**] authority
- * @property [] updateAuthority
+ * @property [_writable_] authorityPda
  * @property [**signer**] payer
- * @property [] collectionMetadata
  * @property [] collectionMint
- * @property [] collectionMasterEdition
+ * @property [] collectionMetadata
  * @property [_writable_] collectionAuthorityRecord
+ * @property [**signer**] newCollectionUpdateAuthority
+ * @property [] newCollectionMetadata
+ * @property [] newCollectionMint
+ * @property [] newCollectionMasterEdition
+ * @property [_writable_] newCollectionAuthorityRecord
  * @property [] tokenMetadataProgram
  * @category Instructions
  * @category SetCollection
@@ -38,12 +55,16 @@ export const setCollectionStruct = new beet.BeetArgsStruct<{
 export type SetCollectionInstructionAccounts = {
   candyMachine: web3.PublicKey;
   authority: web3.PublicKey;
-  updateAuthority: web3.PublicKey;
+  authorityPda: web3.PublicKey;
   payer: web3.PublicKey;
-  collectionMetadata: web3.PublicKey;
   collectionMint: web3.PublicKey;
-  collectionMasterEdition: web3.PublicKey;
+  collectionMetadata: web3.PublicKey;
   collectionAuthorityRecord: web3.PublicKey;
+  newCollectionUpdateAuthority: web3.PublicKey;
+  newCollectionMetadata: web3.PublicKey;
+  newCollectionMint: web3.PublicKey;
+  newCollectionMasterEdition: web3.PublicKey;
+  newCollectionAuthorityRecord: web3.PublicKey;
   tokenMetadataProgram: web3.PublicKey;
   systemProgram?: web3.PublicKey;
   rent?: web3.PublicKey;
@@ -55,16 +76,20 @@ export const setCollectionInstructionDiscriminator = [192, 254, 206, 76, 168, 18
  * Creates a _SetCollection_ instruction.
  *
  * @param accounts that will be accessed while the instruction is processed
+ * @param args to provide as instruction data to the program
+ *
  * @category Instructions
  * @category SetCollection
  * @category generated
  */
 export function createSetCollectionInstruction(
   accounts: SetCollectionInstructionAccounts,
+  args: SetCollectionInstructionArgs,
   programId = new web3.PublicKey('cndy3CZK71ZHMp9ddpq5NVvQDx33o6cCYDf4JBAWCk7'),
 ) {
   const [data] = setCollectionStruct.serialize({
     instructionDiscriminator: setCollectionInstructionDiscriminator,
+    ...args,
   });
   const keys: web3.AccountMeta[] = [
     {
@@ -78,8 +103,8 @@ export function createSetCollectionInstruction(
       isSigner: true,
     },
     {
-      pubkey: accounts.updateAuthority,
-      isWritable: false,
+      pubkey: accounts.authorityPda,
+      isWritable: true,
       isSigner: false,
     },
     {
@@ -88,22 +113,42 @@ export function createSetCollectionInstruction(
       isSigner: true,
     },
     {
-      pubkey: accounts.collectionMetadata,
-      isWritable: false,
-      isSigner: false,
-    },
-    {
       pubkey: accounts.collectionMint,
       isWritable: false,
       isSigner: false,
     },
     {
-      pubkey: accounts.collectionMasterEdition,
+      pubkey: accounts.collectionMetadata,
       isWritable: false,
       isSigner: false,
     },
     {
       pubkey: accounts.collectionAuthorityRecord,
+      isWritable: true,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.newCollectionUpdateAuthority,
+      isWritable: false,
+      isSigner: true,
+    },
+    {
+      pubkey: accounts.newCollectionMetadata,
+      isWritable: false,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.newCollectionMint,
+      isWritable: false,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.newCollectionMasterEdition,
+      isWritable: false,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.newCollectionAuthorityRecord,
       isWritable: true,
       isSigner: false,
     },

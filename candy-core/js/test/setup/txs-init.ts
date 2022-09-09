@@ -10,30 +10,38 @@ import {
   Keypair,
   PublicKey,
   SystemProgram,
-  Transaction,
-  TransactionInstruction,
   SYSVAR_RENT_PUBKEY,
   SYSVAR_SLOT_HASHES_PUBKEY,
+  Transaction,
+  TransactionInstruction,
 } from '@solana/web3.js';
 import {
-  MintLayout,
   createAssociatedTokenAccountInstruction,
   createInitializeMintInstruction,
   createMintToInstruction,
+  MintLayout,
   TOKEN_PROGRAM_ID,
-  ASSOCIATED_TOKEN_PROGRAM_ID,
 } from '@solana/spl-token';
 import { Test } from 'tape';
 import * as program from '../../src/generated';
+import { CandyMachine, CandyMachineData } from '../../src/generated';
 import { amman } from '.';
 import { COLLECTION_METADATA, getCandyMachineSpace } from '../utils';
-import { CandyMachine, CandyMachineData } from '../../src/generated';
-import { keypairIdentity, Metaplex } from '@metaplex-foundation/js';
+import {
+  findAssociatedTokenAccountPda,
+  findCandyMachineCreatorPda,
+  findCollectionAuthorityRecordPda,
+  findMasterEditionV2Pda,
+  findMetadataPda,
+  keypairIdentity,
+  Metaplex,
+} from '@metaplex-foundation/js';
 
 const METAPLEX_PROGRAM_ID = new PublicKey('metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s');
 
 export class InitTransactions {
   readonly getKeypair: LoadOrGenKeypair | GenLabeledKeypair;
+
   constructor(readonly resuseKeypairs = false) {
     this.getKeypair = resuseKeypairs ? amman.loadOrGenKeypair : amman.genLabeledKeypair;
   }
@@ -106,44 +114,28 @@ export class InitTransactions {
       .run();
 
     const [, candyMachine] = await this.getKeypair('Candy Machine Account');
+    const authorityPda = findCandyMachineCreatorPda(candyMachine.publicKey);
 
-    amman.addr.addLabel('Collection Mint', collection.address);
+    await amman.addr.addLabel('Collection Mint', collection.address);
 
-    const updateAuthority = payer.publicKey;
-
-    const [collectionAuthorityRecord] = await PublicKey.findProgramAddress(
-      [
-        Buffer.from('metadata'),
-        METAPLEX_PROGRAM_ID.toBuffer(),
-        collection.address.toBuffer(),
-        Buffer.from('collection_authority'),
-        updateAuthority.toBuffer(),
-      ],
-      METAPLEX_PROGRAM_ID,
+    const collectionAuthorityRecord = findCollectionAuthorityRecordPda(
+      collection.mint.address,
+      authorityPda,
     );
-    amman.addr.addLabel('Collection Authority Record Master Edition', collectionAuthorityRecord);
+    await amman.addr.addLabel('Collection Authority Record', collectionAuthorityRecord);
 
-    const [collectionMetadata] = await PublicKey.findProgramAddress(
-      [Buffer.from('metadata'), METAPLEX_PROGRAM_ID.toBuffer(), collection.address.toBuffer()],
-      METAPLEX_PROGRAM_ID,
-    );
-    amman.addr.addLabel('Collection Metadata', collectionMetadata);
+    const collectionMetadata = findMetadataPda(collection.mint.address);
+    await amman.addr.addLabel('Collection Metadata', collectionMetadata);
 
-    const [collectionMasterEdition] = await PublicKey.findProgramAddress(
-      [
-        Buffer.from('metadata'),
-        METAPLEX_PROGRAM_ID.toBuffer(),
-        collection.address.toBuffer(),
-        Buffer.from('edition'),
-      ],
-      METAPLEX_PROGRAM_ID,
-    );
-    amman.addr.addLabel('Collection Master Edition', collectionMasterEdition);
+    const collectionMasterEdition = findMasterEditionV2Pda(collection.mint.address);
+    await amman.addr.addLabel('Collection Master Edition', collectionMasterEdition);
 
     const accounts: program.InitializeInstructionAccounts = {
+      authorityPda,
+      collectionUpdateAuthority: collection.updateAuthorityAddress,
+      mintAuthority: payer.publicKey,
       candyMachine: candyMachine.publicKey,
       authority: payer.publicKey,
-      updateAuthority: payer.publicKey,
       payer: payer.publicKey,
       collectionMetadata,
       collectionMint: collection.address,
@@ -155,6 +147,7 @@ export class InitTransactions {
     };
 
     const args: program.InitializeInstructionArgs = {
+      authorityPdaBump: authorityPda.bump,
       data: data,
     };
 
@@ -239,122 +232,66 @@ export class InitTransactions {
     connection: Connection,
   ): Promise<{ tx: ConfirmedTransactionAssertablePromise }> {
     const candyMachineObject = await CandyMachine.fromAccountAddress(connection, candyMachine);
+    const collectionMint = candyMachineObject.collectionMint;
     // mint address
-    const [mint, mintPair] = await this.getKeypair('mint');
-    amman.addr.addLabel('Mint', mint);
+    const [nftMint, mintPair] = await this.getKeypair('mint');
+    await amman.addr.addLabel('NFT Mint', nftMint);
 
     // PDAs required for the mint
+    const nftMetadata = findMetadataPda(nftMint);
+    const nftMasterEdition = findMasterEditionV2Pda(nftMint);
+    const nftTokenAccount = findAssociatedTokenAccountPda(nftMint, payer.publicKey);
 
-    // creator address
-    const [candyMachineCreator, bump] = await PublicKey.findProgramAddress(
-      [Buffer.from('candy_machine'), candyMachine.toBuffer()],
-      program.PROGRAM_ID,
+    const authorityPda = findCandyMachineCreatorPda(candyMachine);
+    const collectionAuthorityRecord = findCollectionAuthorityRecordPda(
+      collectionMint,
+      authorityPda,
     );
-    amman.addr.addLabel('Mint Creator', candyMachineCreator);
-
-    // associated token address
-    const [associatedToken] = await PublicKey.findProgramAddress(
-      [payer.publicKey.toBuffer(), TOKEN_PROGRAM_ID.toBuffer(), mint.toBuffer()],
-      ASSOCIATED_TOKEN_PROGRAM_ID,
-    );
-    amman.addr.addLabel('Mint Associated Token', associatedToken);
-
-    // metadata address
-    const [metadataAddress] = await PublicKey.findProgramAddress(
-      [Buffer.from('metadata'), METAPLEX_PROGRAM_ID.toBuffer(), mint.toBuffer()],
-      METAPLEX_PROGRAM_ID,
-    );
-    amman.addr.addLabel('Mint Metadata', metadataAddress);
-
-    // master edition address
-    const [masterEdition] = await PublicKey.findProgramAddress(
-      [
-        Buffer.from('metadata'),
-        METAPLEX_PROGRAM_ID.toBuffer(),
-        mint.toBuffer(),
-        Buffer.from('edition'),
-      ],
-      METAPLEX_PROGRAM_ID,
-    );
-    amman.addr.addLabel('Mint Master Edition', masterEdition);
-
-    const collectionMint = candyMachineObject.collectionMint;
-    amman.addr.addLabel('Collection Mint', collectionMint);
-
-    const [collectionAuthorityRecord] = await PublicKey.findProgramAddress(
-      [
-        Buffer.from('metadata'),
-        METAPLEX_PROGRAM_ID.toBuffer(),
-        collectionMint.toBuffer(),
-        Buffer.from('collection_authority'),
-        candyMachineObject.updateAuthority.toBuffer(),
-      ],
-      METAPLEX_PROGRAM_ID,
-    );
-    amman.addr.addLabel('Collection Authority Record Master Edition', collectionAuthorityRecord);
-
-    const [collectionMetadata] = await PublicKey.findProgramAddress(
-      [Buffer.from('metadata'), METAPLEX_PROGRAM_ID.toBuffer(), collectionMint.toBuffer()],
-      METAPLEX_PROGRAM_ID,
-    );
-    amman.addr.addLabel('Collection Metadata', collectionMetadata);
-
-    const [collectionMasterEdition] = await PublicKey.findProgramAddress(
-      [
-        Buffer.from('metadata'),
-        METAPLEX_PROGRAM_ID.toBuffer(),
-        collectionMint.toBuffer(),
-        Buffer.from('edition'),
-      ],
-      METAPLEX_PROGRAM_ID,
-    );
-    amman.addr.addLabel('Collection Master Edition', collectionMasterEdition);
+    const collectionMetadata = findMetadataPda(collectionMint);
+    const collectionMasterEdition = findMasterEditionV2Pda(collectionMint);
 
     const accounts: program.MintInstructionAccounts = {
+      collectionUpdateAuthority: undefined,
       candyMachine: candyMachine,
-      candyMachineCreator: candyMachineCreator,
-      authority: candyMachineObject.authority,
-      updateAuthority: candyMachineObject.updateAuthority,
+      authorityPda,
+      mintAuthority: candyMachineObject.authority,
       payer: payer.publicKey,
-      mint: mint,
-      mintAuthority: payer.publicKey,
-      metadata: metadataAddress,
-      masterEdition: masterEdition,
+      nftMint,
+      nftMintAuthority: payer.publicKey,
+      nftMetadata,
+      nftMasterEdition,
       collectionAuthorityRecord,
       collectionMint,
       collectionMetadata,
       collectionMasterEdition,
       tokenMetadataProgram: METAPLEX_PROGRAM_ID,
-      tokenProgram: TOKEN_PROGRAM_ID,
-      systemProgram: SystemProgram.programId,
-      rent: SYSVAR_RENT_PUBKEY,
       recentSlothashes: SYSVAR_SLOT_HASHES_PUBKEY,
     };
 
     const args: program.MintInstructionArgs = {
-      creatorBump: bump,
+      authorityPdaBump: authorityPda.bump,
     };
 
     const ixs: TransactionInstruction[] = [];
     ixs.push(
       SystemProgram.createAccount({
         fromPubkey: payer.publicKey,
-        newAccountPubkey: mint,
+        newAccountPubkey: nftMint,
         lamports: await connection.getMinimumBalanceForRentExemption(MintLayout.span),
         space: MintLayout.span,
         programId: TOKEN_PROGRAM_ID,
       }),
     );
-    ixs.push(createInitializeMintInstruction(mint, 0, payer.publicKey, payer.publicKey));
+    ixs.push(createInitializeMintInstruction(nftMint, 0, payer.publicKey, payer.publicKey));
     ixs.push(
       createAssociatedTokenAccountInstruction(
         payer.publicKey,
-        associatedToken,
+        nftTokenAccount,
         payer.publicKey,
-        mint,
+        nftMint,
       ),
     );
-    ixs.push(createMintToInstruction(mint, associatedToken, payer.publicKey, 1, []));
+    ixs.push(createMintToInstruction(nftMint, nftTokenAccount, payer.publicKey, 1, []));
     // candy machine mint instruction
     ixs.push(program.createMintInstruction(accounts, args));
     const tx = new Transaction().add(...ixs);

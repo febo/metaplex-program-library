@@ -2,6 +2,7 @@ import test from 'tape';
 import spok from 'spok';
 import { InitTransactions, killStuckProcess } from './setup/';
 import { CandyMachine } from '../src/generated';
+import * as program from '../src/generated';
 import { spokSameBignum, spokSamePubkey } from './utils';
 
 const init = new InitTransactions();
@@ -12,13 +13,12 @@ test('initialize: new candy machine', async (t) => {
   const { fstTxHandler, payerPair, connection } = await init.payer();
   const items = 10;
 
-  const data = {
+  const data: program.CandyMachineData = {
     itemsAvailable: items,
     symbol: 'CORE',
     sellerFeeBasisPoints: 500,
     maxSupply: 0,
     isMutable: true,
-    retainAuthority: true,
     creators: [
       {
         address: payerPair.publicKey,
@@ -50,7 +50,6 @@ test('initialize: new candy machine', async (t) => {
 
   spok(t, candyMachine, {
     authority: spokSamePubkey(payerPair.publicKey),
-    updateAuthority: spokSamePubkey(payerPair.publicKey),
     itemsRedeemed: spokSameBignum(0),
     data: {
       itemsAvailable: spokSameBignum(items),
@@ -69,13 +68,12 @@ test('initialize: new candy machine (hidden settings)', async (t) => {
   const { fstTxHandler, payerPair, connection } = await init.payer();
   const items = 100;
 
-  const data = {
+  const data: program.CandyMachineData = {
     itemsAvailable: items,
     symbol: 'CORE',
     sellerFeeBasisPoints: 500,
     maxSupply: 0,
     isMutable: true,
-    retainAuthority: true,
     creators: [
       {
         address: payerPair.publicKey,
@@ -105,7 +103,6 @@ test('initialize: new candy machine (hidden settings)', async (t) => {
 
   spok(t, candyMachine, {
     authority: spokSamePubkey(payerPair.publicKey),
-    updateAuthority: spokSamePubkey(payerPair.publicKey),
     itemsRedeemed: spokSameBignum(0),
     data: {
       itemsAvailable: spokSameBignum(items),

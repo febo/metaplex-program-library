@@ -15,7 +15,7 @@ import * as web3 from '@solana/web3.js';
  * @category generated
  */
 export type MintInstructionArgs = {
-  creatorBump: number;
+  authorityPdaBump: number;
 };
 /**
  * @category Instructions
@@ -29,7 +29,7 @@ export const mintStruct = new beet.BeetArgsStruct<
 >(
   [
     ['instructionDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)],
-    ['creatorBump', beet.u8],
+    ['authorityPdaBump', beet.u8],
   ],
   'MintInstructionArgs',
 );
@@ -37,18 +37,18 @@ export const mintStruct = new beet.BeetArgsStruct<
  * Accounts required by the _mint_ instruction
  *
  * @property [_writable_] candyMachine
- * @property [] candyMachineCreator
- * @property [**signer**] authority
- * @property [] updateAuthority
- * @property [_writable_, **signer**] payer
- * @property [_writable_] mint
+ * @property [] authorityPda
  * @property [**signer**] mintAuthority
- * @property [_writable_] metadata
- * @property [_writable_] masterEdition
+ * @property [_writable_, **signer**] payer
+ * @property [_writable_] nftMint
+ * @property [**signer**] nftMintAuthority
+ * @property [_writable_] nftMetadata
+ * @property [_writable_] nftMasterEdition
  * @property [] collectionAuthorityRecord
  * @property [] collectionMint
  * @property [_writable_] collectionMetadata
  * @property [] collectionMasterEdition
+ * @property [] collectionUpdateAuthority
  * @property [] tokenMetadataProgram
  * @property [] recentSlothashes
  * @category Instructions
@@ -57,18 +57,18 @@ export const mintStruct = new beet.BeetArgsStruct<
  */
 export type MintInstructionAccounts = {
   candyMachine: web3.PublicKey;
-  candyMachineCreator: web3.PublicKey;
-  authority: web3.PublicKey;
-  updateAuthority: web3.PublicKey;
-  payer: web3.PublicKey;
-  mint: web3.PublicKey;
+  authorityPda: web3.PublicKey;
   mintAuthority: web3.PublicKey;
-  metadata: web3.PublicKey;
-  masterEdition: web3.PublicKey;
+  payer: web3.PublicKey;
+  nftMint: web3.PublicKey;
+  nftMintAuthority: web3.PublicKey;
+  nftMetadata: web3.PublicKey;
+  nftMasterEdition: web3.PublicKey;
   collectionAuthorityRecord: web3.PublicKey;
   collectionMint: web3.PublicKey;
   collectionMetadata: web3.PublicKey;
   collectionMasterEdition: web3.PublicKey;
+  collectionUpdateAuthority: web3.PublicKey;
   tokenMetadataProgram: web3.PublicKey;
   tokenProgram?: web3.PublicKey;
   systemProgram?: web3.PublicKey;
@@ -104,28 +104,8 @@ export function createMintInstruction(
       isSigner: false,
     },
     {
-      pubkey: accounts.candyMachineCreator,
+      pubkey: accounts.authorityPda,
       isWritable: false,
-      isSigner: false,
-    },
-    {
-      pubkey: accounts.authority,
-      isWritable: false,
-      isSigner: true,
-    },
-    {
-      pubkey: accounts.updateAuthority,
-      isWritable: false,
-      isSigner: false,
-    },
-    {
-      pubkey: accounts.payer,
-      isWritable: true,
-      isSigner: true,
-    },
-    {
-      pubkey: accounts.mint,
-      isWritable: true,
       isSigner: false,
     },
     {
@@ -134,12 +114,27 @@ export function createMintInstruction(
       isSigner: true,
     },
     {
-      pubkey: accounts.metadata,
+      pubkey: accounts.payer,
+      isWritable: true,
+      isSigner: true,
+    },
+    {
+      pubkey: accounts.nftMint,
       isWritable: true,
       isSigner: false,
     },
     {
-      pubkey: accounts.masterEdition,
+      pubkey: accounts.nftMintAuthority,
+      isWritable: false,
+      isSigner: true,
+    },
+    {
+      pubkey: accounts.nftMetadata,
+      isWritable: true,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.nftMasterEdition,
       isWritable: true,
       isSigner: false,
     },
@@ -160,6 +155,11 @@ export function createMintInstruction(
     },
     {
       pubkey: accounts.collectionMasterEdition,
+      isWritable: false,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.collectionUpdateAuthority,
       isWritable: false,
       isSigner: false,
     },

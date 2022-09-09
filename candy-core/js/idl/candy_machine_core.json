@@ -46,12 +46,17 @@
           "isSigner": false
         },
         {
+          "name": "authorityPda",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "authority",
           "isMut": false,
           "isSigner": false
         },
         {
-          "name": "updateAuthority",
+          "name": "mintAuthority",
           "isMut": false,
           "isSigner": false
         },
@@ -74,6 +79,11 @@
           "name": "collectionMasterEdition",
           "isMut": false,
           "isSigner": false
+        },
+        {
+          "name": "collectionUpdateAuthority",
+          "isMut": false,
+          "isSigner": true
         },
         {
           "name": "collectionAuthorityRecord",
@@ -102,6 +112,10 @@
           "type": {
             "defined": "CandyMachineData"
           }
+        },
+        {
+          "name": "authorityPdaBump",
+          "type": "u8"
         }
       ]
     },
@@ -117,28 +131,8 @@
           "isSigner": false
         },
         {
-          "name": "candyMachineCreator",
+          "name": "authorityPda",
           "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "authority",
-          "isMut": false,
-          "isSigner": true
-        },
-        {
-          "name": "updateAuthority",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "payer",
-          "isMut": true,
-          "isSigner": true
-        },
-        {
-          "name": "mint",
-          "isMut": true,
           "isSigner": false
         },
         {
@@ -147,12 +141,27 @@
           "isSigner": true
         },
         {
-          "name": "metadata",
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "nftMint",
           "isMut": true,
           "isSigner": false
         },
         {
-          "name": "masterEdition",
+          "name": "nftMintAuthority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "nftMetadata",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "nftMasterEdition",
           "isMut": true,
           "isSigner": false
         },
@@ -173,6 +182,11 @@
         },
         {
           "name": "collectionMasterEdition",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "collectionUpdateAuthority",
           "isMut": false,
           "isSigner": false
         },
@@ -204,7 +218,7 @@
       ],
       "args": [
         {
-          "name": "creatorBump",
+          "name": "authorityPdaBump",
           "type": "u8"
         }
       ]
@@ -226,8 +240,8 @@
           "isSigner": true
         },
         {
-          "name": "updateAuthority",
-          "isMut": false,
+          "name": "authorityPda",
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -236,22 +250,42 @@
           "isSigner": true
         },
         {
-          "name": "collectionMetadata",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
           "name": "collectionMint",
           "isMut": false,
           "isSigner": false
         },
         {
-          "name": "collectionMasterEdition",
+          "name": "collectionMetadata",
           "isMut": false,
           "isSigner": false
         },
         {
           "name": "collectionAuthorityRecord",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "newCollectionUpdateAuthority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "newCollectionMetadata",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "newCollectionMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "newCollectionMasterEdition",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "newCollectionAuthorityRecord",
           "isMut": true,
           "isSigner": false
         },
@@ -271,7 +305,12 @@
           "isSigner": false
         }
       ],
-      "args": []
+      "args": [
+        {
+          "name": "authorityPdaBump",
+          "type": "u8"
+        }
+      ]
     },
     {
       "name": "setAuthority",
@@ -372,9 +411,9 @@
             "type": "publicKey"
           },
           {
-            "name": "updateAuthority",
+            "name": "mintAuthority",
             "docs": [
-              "Update authority address to use when retaining authority."
+              "Authority address allowed to mint from the candy machine."
             ],
             "type": "publicKey"
           },

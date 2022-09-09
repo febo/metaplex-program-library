@@ -18,7 +18,7 @@ import { CandyMachineData, candyMachineDataBeet } from '../types/CandyMachineDat
 export type CandyMachineArgs = {
   features: beet.bignum;
   authority: web3.PublicKey;
-  updateAuthority: web3.PublicKey;
+  mintAuthority: web3.PublicKey;
   collectionMint: web3.PublicKey;
   itemsRedeemed: beet.bignum;
   data: CandyMachineData;
@@ -36,7 +36,7 @@ export class CandyMachine implements CandyMachineArgs {
   private constructor(
     readonly features: beet.bignum,
     readonly authority: web3.PublicKey,
-    readonly updateAuthority: web3.PublicKey,
+    readonly mintAuthority: web3.PublicKey,
     readonly collectionMint: web3.PublicKey,
     readonly itemsRedeemed: beet.bignum,
     readonly data: CandyMachineData,
@@ -49,7 +49,7 @@ export class CandyMachine implements CandyMachineArgs {
     return new CandyMachine(
       args.features,
       args.authority,
-      args.updateAuthority,
+      args.mintAuthority,
       args.collectionMint,
       args.itemsRedeemed,
       args.data,
@@ -164,7 +164,7 @@ export class CandyMachine implements CandyMachineArgs {
         return x;
       })(),
       authority: this.authority.toBase58(),
-      updateAuthority: this.updateAuthority.toBase58(),
+      mintAuthority: this.mintAuthority.toBase58(),
       collectionMint: this.collectionMint.toBase58(),
       itemsRedeemed: (() => {
         const x = <{ toNumber: () => number }>this.itemsRedeemed;
@@ -196,7 +196,7 @@ export const candyMachineBeet = new beet.FixableBeetStruct<
     ['accountDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)],
     ['features', beet.u64],
     ['authority', beetSolana.publicKey],
-    ['updateAuthority', beetSolana.publicKey],
+    ['mintAuthority', beetSolana.publicKey],
     ['collectionMint', beetSolana.publicKey],
     ['itemsRedeemed', beet.u64],
     ['data', candyMachineDataBeet],

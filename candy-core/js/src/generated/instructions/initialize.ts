@@ -16,6 +16,7 @@ import { CandyMachineData, candyMachineDataBeet } from '../types/CandyMachineDat
  */
 export type InitializeInstructionArgs = {
   data: CandyMachineData;
+  authorityPdaBump: number;
 };
 /**
  * @category Instructions
@@ -30,6 +31,7 @@ export const initializeStruct = new beet.FixableBeetArgsStruct<
   [
     ['instructionDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)],
     ['data', candyMachineDataBeet],
+    ['authorityPdaBump', beet.u8],
   ],
   'InitializeInstructionArgs',
 );
@@ -37,12 +39,14 @@ export const initializeStruct = new beet.FixableBeetArgsStruct<
  * Accounts required by the _initialize_ instruction
  *
  * @property [_writable_] candyMachine
+ * @property [_writable_] authorityPda
  * @property [] authority
- * @property [] updateAuthority
+ * @property [] mintAuthority
  * @property [**signer**] payer
  * @property [] collectionMetadata
  * @property [] collectionMint
  * @property [] collectionMasterEdition
+ * @property [**signer**] collectionUpdateAuthority
  * @property [_writable_] collectionAuthorityRecord
  * @property [] tokenMetadataProgram
  * @category Instructions
@@ -51,12 +55,14 @@ export const initializeStruct = new beet.FixableBeetArgsStruct<
  */
 export type InitializeInstructionAccounts = {
   candyMachine: web3.PublicKey;
+  authorityPda: web3.PublicKey;
   authority: web3.PublicKey;
-  updateAuthority: web3.PublicKey;
+  mintAuthority: web3.PublicKey;
   payer: web3.PublicKey;
   collectionMetadata: web3.PublicKey;
   collectionMint: web3.PublicKey;
   collectionMasterEdition: web3.PublicKey;
+  collectionUpdateAuthority: web3.PublicKey;
   collectionAuthorityRecord: web3.PublicKey;
   tokenMetadataProgram: web3.PublicKey;
   systemProgram?: web3.PublicKey;
@@ -91,12 +97,17 @@ export function createInitializeInstruction(
       isSigner: false,
     },
     {
+      pubkey: accounts.authorityPda,
+      isWritable: true,
+      isSigner: false,
+    },
+    {
       pubkey: accounts.authority,
       isWritable: false,
       isSigner: false,
     },
     {
-      pubkey: accounts.updateAuthority,
+      pubkey: accounts.mintAuthority,
       isWritable: false,
       isSigner: false,
     },
@@ -119,6 +130,11 @@ export function createInitializeInstruction(
       pubkey: accounts.collectionMasterEdition,
       isWritable: false,
       isSigner: false,
+    },
+    {
+      pubkey: accounts.collectionUpdateAuthority,
+      isWritable: false,
+      isSigner: true,
     },
     {
       pubkey: accounts.collectionAuthorityRecord,

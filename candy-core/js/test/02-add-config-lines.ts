@@ -1,5 +1,6 @@
 import test from 'tape';
 import { InitTransactions, killStuckProcess } from './setup/';
+import * as program from '../src/generated';
 
 const init = new InitTransactions();
 
@@ -9,7 +10,7 @@ test('add_config_lines', async (t) => {
   const { fstTxHandler, payerPair, connection } = await init.payer();
   const items = 100;
 
-  const data = {
+  const data: program.CandyMachineData = {
     itemsAvailable: items,
     symbol: 'CORE',
     sellerFeeBasisPoints: 500,
@@ -42,15 +43,13 @@ test('add_config_lines', async (t) => {
   // executes the transaction
   await transaction.assertSuccess(t);
 
-  const lines = [];
+  const lines: program.ConfigLine[] = [];
 
   for (let i = 0; i < items; i++) {
-    const line = {
+    lines[i] = {
       name: `NFT #${i + 1}`,
       uri: 'uJSdJIsz_tYTcjUEWdeVSj0aR90K-hjDauATWZSi-tQ',
     };
-
-    lines[i] = line;
   }
   const { txs } = await init.addConfigLines(t, address, payerPair, lines);
   // confirms that all lines have been written
@@ -65,7 +64,7 @@ test('add_config_lines (hidden settings)', async (t) => {
   const { fstTxHandler, payerPair, connection } = await init.payer();
   const items = 10;
 
-  const data = {
+  const data: program.CandyMachineData = {
     itemsAvailable: items,
     symbol: 'CORE',
     sellerFeeBasisPoints: 500,
@@ -96,15 +95,13 @@ test('add_config_lines (hidden settings)', async (t) => {
   // executes the transaction
   await transaction.assertSuccess(t);
 
-  const lines = [];
+  const lines: program.ConfigLine[] = [];
 
   for (let i = 0; i < items; i++) {
-    const line = {
+    lines[i] = {
       name: `NFT #${i + 1}`,
       uri: 'uJSdJIsz_tYTcjUEWdeVSj0aR90K-hjDauATWZSi-tQ',
     };
-
-    lines[i] = line;
   }
   const { txs } = await init.addConfigLines(t, address, payerPair, lines);
   // this should fail since hiddenSettings do not have config lines

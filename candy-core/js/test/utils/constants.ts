@@ -12,7 +12,7 @@ export const HIDDEN_SECTION =
   8 + // discriminator
   8 + // features
   32 + // authority
-  32 + // update_authority
+  32 + // mint_authority
   32 + // collection mint
   8 + // items redeemed
   8 + // items available (config data)
@@ -21,7 +21,6 @@ export const HIDDEN_SECTION =
   2 + // seller fee basis points
   8 + // max supply
   1 + // is mutable
-  1 + // retain authority
   4 +
   MAX_CREATOR_LIMIT * MAX_CREATOR_LEN + // u32 + creators vec
   1 + // option (config lines settings)

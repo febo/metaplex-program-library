@@ -1,5 +1,6 @@
 import test from 'tape';
 import { InitTransactions, killStuckProcess } from './setup';
+import * as program from '../src/generated';
 
 const init = new InitTransactions();
 
@@ -9,7 +10,7 @@ test('withdraw', async (t) => {
   const { fstTxHandler, payerPair, connection } = await init.payer();
   const items = 100;
 
-  const data = {
+  const data: program.CandyMachineData = {
     itemsAvailable: items,
     symbol: 'CORE',
     sellerFeeBasisPoints: 500,
