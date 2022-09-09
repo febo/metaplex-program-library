@@ -29,7 +29,7 @@ pub struct Initialize<'info> {
     #[account(mut)]
     pub base: Signer<'info>,
     /// CHECK: authority can be any account and is not written to or read
-    authority: Signer<'info>,
+    authority: UncheckedAccount<'info>,
     #[account(mut)]
     payer: Signer<'info>,
     pub system_program: Program<'info, System>,
