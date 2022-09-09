@@ -169,7 +169,6 @@ pub struct Mint<'info> {
     #[account(mut)]
     pub nft_mint: UncheckedAccount<'info>,
     pub nft_mint_authority: Signer<'info>,
-    pub nft_mint_update_authority: Signer<'info>,
     /// CHECK: account checked in CPI
     #[account(mut)]
     pub nft_master_edition: UncheckedAccount<'info>,
