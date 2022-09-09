@@ -128,7 +128,7 @@
         },
         {
           "name": "authorityPda",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -212,12 +212,7 @@
           "isSigner": false
         }
       ],
-      "args": [
-        {
-          "name": "authorityPdaBump",
-          "type": "u8"
-        }
-      ]
+      "args": []
     },
     {
       "name": "setCollection",

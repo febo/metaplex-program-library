@@ -54,7 +54,7 @@
     "@solana/spl-token": "^0.2.0"
   },
   "devDependencies": {
-    "@metaplex-foundation/amman": "^0.10.0",
+    "@metaplex-foundation/amman": "^0.11.0",
     "@metaplex-foundation/solita": "^0.12.0",
     "@types/bn.js": "^5.1.0",
     "eslint": "^8.3.0",

@@ -14,30 +14,14 @@ import * as web3 from '@solana/web3.js';
  * @category Mint
  * @category generated
  */
-export type MintInstructionArgs = {
-  authorityPdaBump: number;
-};
-/**
- * @category Instructions
- * @category Mint
- * @category generated
- */
-export const mintStruct = new beet.BeetArgsStruct<
-  MintInstructionArgs & {
-    instructionDiscriminator: number[] /* size: 8 */;
-  }
->(
-  [
-    ['instructionDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)],
-    ['authorityPdaBump', beet.u8],
-  ],
-  'MintInstructionArgs',
-);
+export const mintStruct = new beet.BeetArgsStruct<{
+  instructionDiscriminator: number[] /* size: 8 */;
+}>([['instructionDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)]], 'MintInstructionArgs');
 /**
  * Accounts required by the _mint_ instruction
  *
  * @property [_writable_] candyMachine
- * @property [] authorityPda
+ * @property [_writable_] authorityPda
  * @property [**signer**] mintAuthority
  * @property [_writable_, **signer**] payer
  * @property [_writable_] nftMint
@@ -82,20 +66,16 @@ export const mintInstructionDiscriminator = [51, 57, 225, 47, 182, 146, 137, 166
  * Creates a _Mint_ instruction.
  *
  * @param accounts that will be accessed while the instruction is processed
- * @param args to provide as instruction data to the program
- *
  * @category Instructions
  * @category Mint
  * @category generated
  */
 export function createMintInstruction(
   accounts: MintInstructionAccounts,
-  args: MintInstructionArgs,
   programId = new web3.PublicKey('cndy3CZK71ZHMp9ddpq5NVvQDx33o6cCYDf4JBAWCk7'),
 ) {
   const [data] = mintStruct.serialize({
     instructionDiscriminator: mintInstructionDiscriminator,
-    ...args,
   });
   const keys: web3.AccountMeta[] = [
     {
@@ -105,7 +85,7 @@ export function createMintInstruction(
     },
     {
       pubkey: accounts.authorityPda,
-      isWritable: false,
+      isWritable: true,
       isSigner: false,
     },
     {

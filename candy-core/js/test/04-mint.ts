@@ -2,12 +2,12 @@ import test from 'tape';
 import { InitTransactions, killStuckProcess } from './setup/';
 import * as program from '../src/generated';
 
-const init = new InitTransactions();
+const API = new InitTransactions();
 
 killStuckProcess();
 
-test('mint (authority)', async (t) => {
-  const { fstTxHandler, payerPair, connection } = await init.payer();
+test.only('mint (authority)', async (t) => {
+  const { fstTxHandler, payerPair, connection } = await API.payer();
   const items = 10;
 
   const data: program.CandyMachineData = {
@@ -33,7 +33,7 @@ test('mint (authority)', async (t) => {
     hiddenSettings: null,
   };
 
-  const { tx: transaction, candyMachine: address } = await init.create(
+  const { tx: transaction, candyMachine: address } = await API.create(
     t,
     payerPair,
     data,
@@ -52,20 +52,19 @@ test('mint (authority)', async (t) => {
     };
   }
 
-  const { txs } = await init.addConfigLines(t, address, payerPair, lines);
-  // this should fail since hiddenSettings do not have config lines
+  const { txs } = await API.addConfigLines(t, address, payerPair, lines);
   for (const tx of txs) {
     await fstTxHandler
       .sendAndConfirmTransaction(tx, [payerPair], 'tx: AddConfigLines')
       .assertSuccess(t);
   }
 
-  const { tx: mintTransaction } = await init.mint(t, address, payerPair, fstTxHandler, connection);
+  const { tx: mintTransaction } = await API.mint(t, address, payerPair, fstTxHandler, connection);
   await mintTransaction.assertSuccess(t);
 });
 
 test('mint (minter)', async (t) => {
-  const { fstTxHandler, payerPair, connection } = await init.payer();
+  const { fstTxHandler, payerPair, connection } = await API.payer();
   const items = 10;
 
   const data: program.CandyMachineData = {
@@ -91,7 +90,7 @@ test('mint (minter)', async (t) => {
     hiddenSettings: null,
   };
 
-  const { tx: transaction, candyMachine: address } = await init.create(
+  const { tx: transaction, candyMachine: address } = await API.create(
     t,
     payerPair,
     data,
@@ -110,7 +109,7 @@ test('mint (minter)', async (t) => {
     };
   }
 
-  const { txs } = await init.addConfigLines(t, address, payerPair, lines);
+  const { txs } = await API.addConfigLines(t, address, payerPair, lines);
   // this should fail since hiddenSettings do not have config lines
   for (const tx of txs) {
     await fstTxHandler
@@ -123,10 +122,10 @@ test('mint (minter)', async (t) => {
     fstTxHandler: minterHandler,
     minterPair,
     connection: minterConnection,
-  } = await init.minter();
+  } = await API.minter();
 
   try {
-    const { tx: mintTransaction } = await init.mint(
+    const { tx: mintTransaction } = await API.mint(
       t,
       address,
       minterPair,

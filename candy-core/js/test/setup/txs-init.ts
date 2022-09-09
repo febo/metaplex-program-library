@@ -231,17 +231,20 @@ export class InitTransactions {
     connection: Connection,
   ): Promise<{ tx: ConfirmedTransactionAssertablePromise }> {
     const candyMachineObject = await CandyMachine.fromAccountAddress(connection, candyMachine);
-    const collectionMint = candyMachineObject.collectionMint;
     // mint address
     const [nftMint, mintPair] = await this.getKeypair('mint');
     await amman.addr.addLabel('NFT Mint', nftMint);
-
     // PDAs required for the mint
     const nftMetadata = findMetadataPda(nftMint);
     const nftMasterEdition = findMasterEditionV2Pda(nftMint);
     const nftTokenAccount = findAssociatedTokenAccountPda(nftMint, payer.publicKey);
 
-    const authorityPda = findCandyMachineCreatorPda(candyMachine);
+    const collectionMint = candyMachineObject.collectionMint;
+    // retrieves the collection nft
+    const metaplex = Metaplex.make(connection).use(keypairIdentity(payer));
+    const collection = await metaplex.nfts().findByMint({ mintAddress: collectionMint }).run();
+    // collection PDAs
+    const authorityPda = findCandyMachineCreatorPda(candyMachine, program.PROGRAM_ID);
     const collectionAuthorityRecord = findCollectionAuthorityRecordPda(
       collectionMint,
       authorityPda,
@@ -250,10 +253,9 @@ export class InitTransactions {
     const collectionMasterEdition = findMasterEditionV2Pda(collectionMint);
 
     const accounts: program.MintInstructionAccounts = {
-      collectionUpdateAuthority: undefined,
       candyMachine: candyMachine,
       authorityPda,
-      mintAuthority: candyMachineObject.authority,
+      mintAuthority: candyMachineObject.mintAuthority,
       payer: payer.publicKey,
       nftMint,
       nftMintAuthority: payer.publicKey,
@@ -261,14 +263,11 @@ export class InitTransactions {
       nftMasterEdition,
       collectionAuthorityRecord,
       collectionMint,
+      collectionUpdateAuthority: collection.updateAuthorityAddress,
       collectionMetadata,
       collectionMasterEdition,
       tokenMetadataProgram: METAPLEX_PROGRAM_ID,
       recentSlothashes: SYSVAR_SLOT_HASHES_PUBKEY,
-    };
-
-    const args: program.MintInstructionArgs = {
-      authorityPdaBump: authorityPda.bump,
     };
 
     const ixs: TransactionInstruction[] = [];
@@ -292,7 +291,7 @@ export class InitTransactions {
     );
     ixs.push(createMintToInstruction(nftMint, nftTokenAccount, payer.publicKey, 1, []));
     // candy machine mint instruction
-    ixs.push(program.createMintInstruction(accounts, args));
+    ixs.push(program.createMintInstruction(accounts));
     const tx = new Transaction().add(...ixs);
 
     return { tx: handler.sendAndConfirmTransaction(tx, [payer, mintPair], 'tx: Mint') };
