@@ -11,12 +11,15 @@ use mpl_token_metadata::{
 use solana_program::{program::invoke_signed, sysvar};
 
 use crate::{
-    constants::{AUTHORITY_SEED, COLLECTION_SEED, EMPTY_STR, HIDDEN_SECTION},
+    constants::{AUTHORITY_SEED, EMPTY_STR, HIDDEN_SECTION},
     utils::*,
     CandyError, CandyMachine, ConfigLine,
 };
 
-pub fn mint<'info>(ctx: Context<'_, '_, '_, 'info, Mint<'info>>, creator_bump: u8) -> Result<()> {
+pub fn mint<'info>(
+    ctx: Context<'_, '_, '_, 'info, Mint<'info>>,
+    authority_pda_bump: u8,
+) -> Result<()> {
     // (1) validation
 
     if !ctx.accounts.nft_metadata.data_is_empty() {
@@ -43,6 +46,17 @@ pub fn mint<'info>(ctx: Context<'_, '_, '_, 'info, Mint<'info>>, creator_bump: u
         return err!(CandyError::IncorrectOwner);
     }
 
+    let collection_metadata = &ctx.accounts.collection_metadata;
+    let collection_data: Metadata =
+        Metadata::from_account_info(&collection_metadata.to_account_info())?;
+
+    if !cmp_pubkeys(
+        &collection_data.update_authority,
+        &ctx.accounts.collection_update_authority.key(),
+    ) {
+        return err!(CandyError::IncorrectCollectionAuthority);
+    }
+
     // (2) selecting an item to mint
 
     let recent_slothashes = &ctx.accounts.recent_slothashes;
@@ -63,10 +77,9 @@ pub fn mint<'info>(ctx: Context<'_, '_, '_, 'info, Mint<'info>>, creator_bump: u
 
     // (3) minting
 
-    let candy_machine_creator = &ctx.accounts.candy_machine_creator;
     let mut creators: Vec<mpl_token_metadata::state::Creator> =
         vec![mpl_token_metadata::state::Creator {
-            address: candy_machine_creator.key(),
+            address: ctx.accounts.authority_pda.key(),
             verified: true,
             share: 0,
         }];
@@ -88,7 +101,7 @@ pub fn mint<'info>(ctx: Context<'_, '_, '_, 'info, Mint<'info>>, creator_bump: u
         ctx.accounts.token_program.to_account_info(),
         ctx.accounts.system_program.to_account_info(),
         ctx.accounts.rent.to_account_info(),
-        candy_machine_creator.to_account_info(),
+        ctx.accounts.authority_pda.to_account_info(),
     ];
 
     let master_edition_infos = vec![
@@ -101,11 +114,15 @@ pub fn mint<'info>(ctx: Context<'_, '_, '_, 'info, Mint<'info>>, creator_bump: u
         ctx.accounts.token_program.to_account_info(),
         ctx.accounts.system_program.to_account_info(),
         ctx.accounts.rent.to_account_info(),
-        candy_machine_creator.to_account_info(),
+        ctx.accounts.authority_pda.to_account_info(),
     ];
 
     let cm_key = candy_machine.key();
-    let authority_seeds = [AUTHORITY_SEED.as_bytes(), cm_key.as_ref(), &[creator_bump]];
+    let authority_seeds = [
+        AUTHORITY_SEED.as_bytes(),
+        cm_key.as_ref(),
+        &[authority_pda_bump],
+    ];
 
     invoke_signed(
         &create_metadata_accounts_v2(
@@ -114,7 +131,7 @@ pub fn mint<'info>(ctx: Context<'_, '_, '_, 'info, Mint<'info>>, creator_bump: u
             ctx.accounts.nft_mint.key(),
             ctx.accounts.nft_mint_authority.key(),
             ctx.accounts.payer.key(),
-            candy_machine_creator.key(),
+            ctx.accounts.authority_pda.key(),
             config_line.name,
             candy_machine.data.symbol.clone(),
             config_line.uri,
@@ -134,7 +151,7 @@ pub fn mint<'info>(ctx: Context<'_, '_, '_, 'info, Mint<'info>>, creator_bump: u
             ctx.accounts.token_metadata_program.key(),
             ctx.accounts.nft_master_edition.key(),
             ctx.accounts.nft_mint.key(),
-            candy_machine_creator.key(),
+            ctx.accounts.authority_pda.key(),
             ctx.accounts.nft_mint_authority.key(),
             ctx.accounts.nft_metadata.key(),
             ctx.accounts.payer.key(),
@@ -148,8 +165,8 @@ pub fn mint<'info>(ctx: Context<'_, '_, '_, 'info, Mint<'info>>, creator_bump: u
         &update_metadata_accounts_v2(
             ctx.accounts.token_metadata_program.key(),
             ctx.accounts.nft_metadata.key(),
-            candy_machine_creator.key(),
-            Some(candy_machine.mint_authority), // TODO: should not use the mint_authority
+            ctx.accounts.authority_pda.key(),
+            Some(collection_data.update_authority),
             None,
             Some(true),
             if !candy_machine.data.is_mutable {
@@ -161,24 +178,21 @@ pub fn mint<'info>(ctx: Context<'_, '_, '_, 'info, Mint<'info>>, creator_bump: u
         &[
             ctx.accounts.token_metadata_program.to_account_info(),
             ctx.accounts.nft_metadata.to_account_info(),
-            candy_machine_creator.to_account_info(),
+            ctx.accounts.authority_pda.to_account_info(),
         ],
         &[&authority_seeds],
     )?;
 
     let collection_authority_record = &ctx.accounts.collection_authority_record;
     let collection_mint = &ctx.accounts.collection_mint;
-    let collection_metadata = &ctx.accounts.collection_metadata;
     let collection_master_edition = &ctx.accounts.collection_master_edition;
-    let collection_metadata_metadata: Metadata =
-        Metadata::from_account_info(&collection_metadata.to_account_info())?;
-    let set_collection_ix = if collection_metadata_metadata.collection_details.is_some() {
+    let set_collection_ix = if collection_data.collection_details.is_some() {
         set_and_verify_sized_collection_item(
             ctx.accounts.token_metadata_program.key(),
             ctx.accounts.nft_metadata.key(),
-            ctx.accounts.mint_authority.key(), // TODO: should not use the mint_authority
+            ctx.accounts.authority_pda.key(),
             ctx.accounts.payer.key(),
-            ctx.accounts.mint_authority.key(), // TODO: should not use the mint_authority
+            ctx.accounts.collection_update_authority.key(),
             collection_mint.key(),
             collection_metadata.key(),
             collection_master_edition.key(),
@@ -188,9 +202,9 @@ pub fn mint<'info>(ctx: Context<'_, '_, '_, 'info, Mint<'info>>, creator_bump: u
         set_and_verify_collection(
             ctx.accounts.token_metadata_program.key(),
             ctx.accounts.nft_metadata.key(),
-            ctx.accounts.mint_authority.key(), // TODO: should not use the mint_authority
+            ctx.accounts.authority_pda.key(),
             ctx.accounts.payer.key(),
-            ctx.accounts.mint_authority.key(), // TODO: should not use the mint_authority
+            ctx.accounts.collection_update_authority.key(),
             collection_mint.key(),
             collection_metadata.key(),
             collection_master_edition.key(),
@@ -200,23 +214,19 @@ pub fn mint<'info>(ctx: Context<'_, '_, '_, 'info, Mint<'info>>, creator_bump: u
 
     let set_collection_infos = vec![
         ctx.accounts.nft_metadata.to_account_info(),
-        ctx.accounts.mint_authority.to_account_info(), // TODO: should not use the mint_authority
+        ctx.accounts.authority_pda.to_account_info(),
+        ctx.accounts.collection_update_authority.to_account_info(),
         ctx.accounts.payer.to_account_info(),
-        ctx.accounts.mint_authority.to_account_info(), // TODO: should not use the mint_authority
         collection_mint.to_account_info(),
         collection_metadata.to_account_info(),
         collection_master_edition.to_account_info(),
         collection_authority_record.to_account_info(),
     ];
 
-    let seeds = [COLLECTION_SEED.as_bytes(), &candy_machine.key().to_bytes()];
-    let (_, bump) = Pubkey::find_program_address(&seeds, &crate::ID);
-    let signer = &[seeds[0], seeds[1], &[bump]];
-
     invoke_signed(
         &set_collection_ix,
         set_collection_infos.as_slice(),
-        &[signer],
+        &[&authority_seeds],
     )?;
 
     Ok(())
@@ -303,13 +313,13 @@ pub fn get_config_line(
 
 /// Mint a new NFT pseudo-randomly from the config array.
 #[derive(Accounts)]
-#[instruction(creator_bump: u8)]
+#[instruction(authority_pda_bump: u8)]
 pub struct Mint<'info> {
     #[account(mut, has_one = mint_authority)]
     candy_machine: Box<Account<'info, CandyMachine>>,
     /// CHECK: account constraints checked in account trait
-    #[account(seeds = [AUTHORITY_SEED.as_bytes(), candy_machine.key().as_ref()], bump = creator_bump)]
-    candy_machine_creator: UncheckedAccount<'info>,
+    #[account(seeds = [AUTHORITY_SEED.as_bytes(), candy_machine.key().as_ref()], bump = authority_pda_bump)]
+    authority_pda: UncheckedAccount<'info>,
     // candy machine authority (mint only allowed for the authority)
     mint_authority: Signer<'info>,
     #[account(mut)]
@@ -336,6 +346,8 @@ pub struct Mint<'info> {
     collection_metadata: UncheckedAccount<'info>,
     /// CHECK: account checked in CPI
     collection_master_edition: UncheckedAccount<'info>,
+    /// CHECK: account checked in CPI
+    collection_update_authority: UncheckedAccount<'info>,
     /// CHECK: account checked in CPI
     #[account(address = mpl_token_metadata::id())]
     token_metadata_program: UncheckedAccount<'info>,

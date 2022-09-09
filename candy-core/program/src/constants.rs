@@ -17,14 +17,11 @@ pub const EMPTY_STR: &str = "";
 // Seed used to derive the authority PDA address.
 pub const AUTHORITY_SEED: &str = "candy_machine";
 
-// Seed used to derive the collection authority PDA address.
-pub const COLLECTION_SEED: &str = "collection";
-
 // Determine the start of the account hidden section.
 pub const HIDDEN_SECTION: usize = 8           // discriminator
     + 8                                       // features
     + 32                                      // authority
-    + 32                                      // update_authority
+    + 32                                      // mint authority
     + 32                                      // collection mint
     + 8                                       // items redeemed
     + 8                                       // items available (config data)

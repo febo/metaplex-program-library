@@ -2,14 +2,18 @@ use anchor_lang::{prelude::*, Discriminator};
 use mpl_token_metadata::state::MAX_SYMBOL_LENGTH;
 
 use crate::{
-    constants::HIDDEN_SECTION,
-    set_collection_helper,
+    approve_collection_authority_helper,
+    constants::{AUTHORITY_SEED, HIDDEN_SECTION},
     state::{CandyMachine, CandyMachineData},
     utils::fixed_length_string,
-    SetCollectionHelperAccounts,
+    ApproveCollectionAuthorityHelperAccounts,
 };
 
-pub fn initialize(ctx: Context<Initialize>, data: CandyMachineData) -> Result<()> {
+pub fn initialize(
+    ctx: Context<Initialize>,
+    data: CandyMachineData,
+    _authority_pda_bump: u8,
+) -> Result<()> {
     let candy_machine_account = &mut ctx.accounts.candy_machine;
 
     let mut candy_machine = CandyMachine {
@@ -36,9 +40,9 @@ pub fn initialize(ctx: Context<Initialize>, data: CandyMachineData) -> Result<()
         account_data[HIDDEN_SECTION..HIDDEN_SECTION + 4].copy_from_slice(&u32::MIN.to_le_bytes());
     }
 
-    let set_collection_helper_accounts = SetCollectionHelperAccounts {
+    let approve_collection_authority_helper_accounts = ApproveCollectionAuthorityHelperAccounts {
         payer: ctx.accounts.payer.to_account_info(),
-        update_authority: ctx.accounts.mint_authority.to_account_info(), // TODO: should not use the mint_authority
+        authority_pda: ctx.accounts.authority_pda.to_account_info(),
         collection_mint: ctx.accounts.collection_mint.to_account_info(),
         collection_metadata: ctx.accounts.collection_metadata.to_account_info(),
         collection_master_edition: ctx.accounts.collection_master_edition.to_account_info(),
@@ -46,16 +50,17 @@ pub fn initialize(ctx: Context<Initialize>, data: CandyMachineData) -> Result<()
         token_metadata_program: ctx.accounts.token_metadata_program.to_account_info(),
         system_program: ctx.accounts.system_program.to_account_info(),
         rent: ctx.accounts.rent.to_account_info(),
+        collection_update_authority: ctx.accounts.collection_update_authority.to_account_info(),
     };
 
-    set_collection_helper(set_collection_helper_accounts)?;
+    approve_collection_authority_helper(approve_collection_authority_helper_accounts)?;
 
     Ok(())
 }
 
 /// Create a new candy machine.
 #[derive(Accounts)]
-#[instruction(data: CandyMachineData)]
+#[instruction(data: CandyMachineData, authority_pda_bump: u8)]
 pub struct Initialize<'info> {
     /// CHECK: account constraints checked in account trait
     #[account(
@@ -64,6 +69,12 @@ pub struct Initialize<'info> {
         constraint = candy_machine.to_account_info().owner == program_id && candy_machine.to_account_info().data_len() >= data.get_space_for_candy()?
     )]
     candy_machine: UncheckedAccount<'info>,
+    /// CHECK: account checked in seeds constraint
+    #[account(
+        mut, seeds = [AUTHORITY_SEED.as_bytes(), candy_machine.to_account_info().key.as_ref()],
+        bump = authority_pda_bump
+    )]
+    authority_pda: UncheckedAccount<'info>,
     /// CHECK: authority can be any account and is not written to or read
     authority: UncheckedAccount<'info>,
     // The update authority is used when retain authority is true (in most cases it will
@@ -78,6 +89,7 @@ pub struct Initialize<'info> {
     collection_mint: UncheckedAccount<'info>,
     /// CHECK: account checked in CPI
     collection_master_edition: UncheckedAccount<'info>,
+    collection_update_authority: Signer<'info>,
     /// CHECK: account checked in CPI
     #[account(mut)]
     collection_authority_record: UncheckedAccount<'info>,

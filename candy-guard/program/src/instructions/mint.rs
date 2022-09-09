@@ -13,7 +13,7 @@ use crate::{
 
 pub fn mint<'info>(
     ctx: Context<'_, '_, '_, 'info, Mint<'info>>,
-    creator_bump: u8,
+    authority_pda_bump: u8,
     mint_args: Vec<u8>,
 ) -> Result<()> {
     let candy_guard = &ctx.accounts.candy_guard;
@@ -69,7 +69,7 @@ pub fn mint<'info>(
     // we are good to go, forward the transaction to the candy machine (if errors occur, the
     // actions are reverted and the trasaction fails)
 
-    cpi_mint(&ctx, creator_bump)?;
+    cpi_mint(&ctx, authority_pda_bump)?;
 
     // performs guard post-actions (errors might occur, which will cause the transaction to fail)
     // no bot tax at this point since the actions must be reverted in case of an error
@@ -100,7 +100,10 @@ fn validate<'info>(ctx: &Context<'_, '_, '_, 'info, Mint<'info>>) -> Result<()> 
 }
 
 /// Send a mint transaction to the candy machine.
-fn cpi_mint<'info>(ctx: &Context<'_, '_, '_, 'info, Mint<'info>>, creator_bump: u8) -> Result<()> {
+fn cpi_mint<'info>(
+    ctx: &Context<'_, '_, '_, 'info, Mint<'info>>,
+    authority_pda_bump: u8,
+) -> Result<()> {
     let candy_guard = &ctx.accounts.candy_guard;
     // PDA signer for the transaction
     let seeds = [
@@ -114,32 +117,31 @@ fn cpi_mint<'info>(ctx: &Context<'_, '_, '_, 'info, Mint<'info>>, creator_bump: 
     // candy machine mint instruction accounts
     let mint_ix = mpl_candy_machine_core::cpi::accounts::Mint {
         candy_machine: ctx.accounts.candy_machine.to_account_info(),
-        candy_machine_creator: ctx.accounts.candy_machine_creator.to_account_info(),
-        authority: ctx.accounts.candy_guard.to_account_info(),
-        update_authority: ctx.accounts.update_authority.to_account_info(),
+        authority_pda: ctx.accounts.candy_machine_authority_pda.to_account_info(),
+        mint_authority: ctx.accounts.candy_guard.to_account_info(),
         payer: ctx.accounts.payer.to_account_info(),
-        metadata: ctx.accounts.metadata.to_account_info(),
-        mint: ctx.accounts.mint.to_account_info(),
-        mint_authority: ctx.accounts.mint_authority.to_account_info(),
-        master_edition: ctx.accounts.master_edition.to_account_info(),
+        nft_mint: ctx.accounts.nft_mint.to_account_info(),
+        nft_mint_authority: ctx.accounts.nft_mint_authority.to_account_info(),
+        nft_metadata: ctx.accounts.nft_metadata.to_account_info(),
         collection_authority_record: ctx.accounts.collection_authority_record.to_account_info(),
         collection_mint: ctx.accounts.collection_mint.to_account_info(),
         collection_metadata: ctx.accounts.collection_metadata.to_account_info(),
         collection_master_edition: ctx.accounts.collection_master_edition.to_account_info(),
+        collection_update_authority: ctx.accounts.collection_update_authority.to_account_info(),
         token_metadata_program: ctx.accounts.token_metadata_program.to_account_info(),
         token_program: ctx.accounts.token_program.to_account_info(),
         system_program: ctx.accounts.system_program.to_account_info(),
         rent: ctx.accounts.rent.to_account_info(),
         recent_slothashes: ctx.accounts.recent_slothashes.to_account_info(),
+        nft_master_edition: ctx.accounts.nft_master_edition.to_account_info(),
     };
 
     let cpi_ctx = CpiContext::new_with_signer(candy_machine_program, mint_ix, &signer);
 
-    mpl_candy_machine_core::cpi::mint(cpi_ctx, creator_bump)
+    mpl_candy_machine_core::cpi::mint(cpi_ctx, authority_pda_bump)
 }
 
 #[derive(Accounts)]
-#[instruction(creator_bump: u8, mint_args: Vec<u8>)]
 pub struct Mint<'info> {
     #[account(seeds = [b"candy_guard", candy_guard.base.key().as_ref()], bump)]
     pub candy_guard: Account<'info, CandyGuard>,
@@ -148,32 +150,29 @@ pub struct Mint<'info> {
     pub candy_machine_program: AccountInfo<'info>,
     #[account(
         mut,
-        has_one = update_authority,
         constraint = candy_guard.key() == candy_machine.authority
     )]
     pub candy_machine: Box<Account<'info, CandyMachine>>,
-    /// CHECK: authority can be any account and is not written to or read
-    pub update_authority: UncheckedAccount<'info>,
     // seeds and bump are not validated by the candy guard, they will be validated
     // by the CPI'd candy machine mint instruction
     /// CHECK: account constraints checked in account trait
     #[account(mut)]
-    pub candy_machine_creator: UncheckedAccount<'info>,
+    pub candy_machine_authority_pda: UncheckedAccount<'info>,
     #[account(mut)]
     pub payer: Signer<'info>,
     // with the following accounts we aren't using anchor macros because they are CPI'd
     // through to token-metadata which will do all the validations we need on them.
     /// CHECK: account checked in CPI
     #[account(mut)]
-    pub metadata: UncheckedAccount<'info>,
+    pub nft_metadata: UncheckedAccount<'info>,
     /// CHECK: account checked in CPI
     #[account(mut)]
-    pub mint: UncheckedAccount<'info>,
-    pub mint_authority: Signer<'info>,
-    pub mint_update_authority: Signer<'info>,
+    pub nft_mint: UncheckedAccount<'info>,
+    pub nft_mint_authority: Signer<'info>,
+    pub nft_mint_update_authority: Signer<'info>,
     /// CHECK: account checked in CPI
     #[account(mut)]
-    pub master_edition: UncheckedAccount<'info>,
+    pub nft_master_edition: UncheckedAccount<'info>,
     /// CHECK: account checked in CPI
     pub collection_authority_record: UncheckedAccount<'info>,
     /// CHECK: account checked in CPI
@@ -183,6 +182,8 @@ pub struct Mint<'info> {
     pub collection_metadata: UncheckedAccount<'info>,
     /// CHECK: account checked in CPI
     pub collection_master_edition: UncheckedAccount<'info>,
+    /// CHECK: account checked in CPI
+    pub collection_update_authority: UncheckedAccount<'info>,
     /// CHECK: account checked in CPI
     #[account(address = mpl_token_metadata::id())]
     pub token_metadata_program: UncheckedAccount<'info>,

@@ -5,7 +5,6 @@ use crate::state::CandyGuard;
 
 pub fn unwrap(ctx: Context<Unwrap>) -> Result<()> {
     let candy_machine_program = ctx.accounts.candy_machine_program.to_account_info();
-    let candy_guard = &ctx.accounts.candy_guard;
 
     let update_ix = mpl_candy_machine_core::cpi::accounts::SetAuthority {
         candy_machine: ctx.accounts.candy_machine.to_account_info(),

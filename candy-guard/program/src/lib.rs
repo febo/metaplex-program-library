@@ -23,10 +23,10 @@ pub mod candy_guard {
     /// Mint an NFT from a candy machine wrapped in the candy guard.
     pub fn mint<'info>(
         ctx: Context<'_, '_, '_, 'info, Mint<'info>>,
-        creator_bump: u8,
+        authority_pda_bump: u8,
         mint_args: Vec<u8>,
     ) -> Result<()> {
-        instructions::mint(ctx, creator_bump, mint_args)
+        instructions::mint(ctx, authority_pda_bump, mint_args)
     }
 
     /// Remove a candy guard from a candy machine, setting the authority to the

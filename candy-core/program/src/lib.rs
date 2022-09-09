@@ -27,21 +27,25 @@ pub mod candy_machine_core {
     }
 
     /// Initialize the candy machine account with the specified data.
-    pub fn initialize(ctx: Context<Initialize>, data: CandyMachineData) -> Result<()> {
-        instructions::initialize(ctx, data)
+    pub fn initialize(
+        ctx: Context<Initialize>,
+        data: CandyMachineData,
+        authority_pda_bump: u8,
+    ) -> Result<()> {
+        instructions::initialize(ctx, data, authority_pda_bump)
     }
 
     /// Mint an NFT. Only the candy machine authority is allowed to mint.
     pub fn mint<'info>(
         ctx: Context<'_, '_, '_, 'info, Mint<'info>>,
-        creator_bump: u8,
+        authority_pda_bump: u8,
     ) -> Result<()> {
-        instructions::mint(ctx, creator_bump)
+        instructions::mint(ctx, authority_pda_bump)
     }
 
     /// Set the collection mint for the candy machine.
-    pub fn set_collection(ctx: Context<SetCollection>) -> Result<()> {
-        instructions::set_collection(ctx)
+    pub fn set_collection(ctx: Context<SetCollection>, authority_pda_bump: u8) -> Result<()> {
+        instructions::set_collection(ctx, authority_pda_bump)
     }
 
     /// Set a new authority of the candy machine. Changing the authority has the

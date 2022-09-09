@@ -1,77 +1,126 @@
 use anchor_lang::prelude::*;
+use mpl_token_metadata::instruction::revoke_collection_authority;
 use mpl_token_metadata::{
     assertions::collection::assert_master_edition,
     instruction::approve_collection_authority,
     state::{Metadata, TokenMetadataAccount},
 };
-use solana_program::program::invoke;
+use solana_program::program::{invoke, invoke_signed};
 
-use crate::{cmp_pubkeys, constants::COLLECTION_SEED, CandyError, CandyMachine};
+use crate::{cmp_pubkeys, constants::AUTHORITY_SEED, CandyError, CandyMachine};
 
-pub fn set_collection(ctx: Context<SetCollection>) -> Result<()> {
-    let candy_machine = &mut ctx.accounts.candy_machine;
-
+pub fn set_collection(ctx: Context<SetCollection>, authority_pda_bump: u8) -> Result<()> {
+    let accounts = ctx.accounts;
+    let candy_machine = &mut accounts.candy_machine;
     if candy_machine.items_redeemed > 0 {
         return err!(CandyError::NoChangingCollectionDuringMint);
     }
-    candy_machine.collection_mint = ctx.accounts.collection_mint.key();
 
-    let set_collection_helper_accounts = SetCollectionHelperAccounts {
-        payer: ctx.accounts.payer.to_account_info(),
-        update_authority: /* TODO: should not use the mint_authority */,
-        collection_mint: ctx.accounts.collection_mint.to_account_info(),
-        collection_metadata: ctx.accounts.collection_metadata.to_account_info(),
-        collection_master_edition: ctx.accounts.collection_master_edition.to_account_info(),
-        collection_authority_record: ctx.accounts.collection_authority_record.to_account_info(),
-        token_metadata_program: ctx.accounts.token_metadata_program.to_account_info(),
-        system_program: ctx.accounts.system_program.to_account_info(),
-        rent: ctx.accounts.rent.to_account_info(),
+    // Revoking old collection authority
+
+    let revoke_collection_infos = vec![
+        accounts.collection_authority_record.to_account_info(),
+        accounts.authority_pda.to_account_info(),
+        accounts.collection_metadata.to_account_info(),
+        accounts.collection_mint.to_account_info(),
+    ];
+
+    let cm_key = candy_machine.key();
+
+    let authority_seeds = [
+        AUTHORITY_SEED.as_bytes(),
+        cm_key.as_ref(),
+        &[authority_pda_bump],
+    ];
+
+    invoke_signed(
+        &revoke_collection_authority(
+            accounts.token_metadata_program.key(),
+            accounts.collection_authority_record.key(),
+            accounts.authority_pda.key(),
+            accounts.authority_pda.key(),
+            accounts.collection_metadata.key(),
+            accounts.collection_mint.key(),
+        ),
+        revoke_collection_infos.as_slice(),
+        &[&authority_seeds],
+    )?;
+
+    candy_machine.collection_mint = accounts.new_collection_mint.key();
+
+    let approve_collection_authority_helper_accounts = ApproveCollectionAuthorityHelperAccounts {
+        payer: accounts.payer.to_account_info(),
+        authority_pda: accounts.authority_pda.to_account_info(),
+        collection_update_authority: accounts.new_collection_update_authority.to_account_info(),
+        collection_mint: accounts.new_collection_mint.to_account_info(),
+        collection_metadata: accounts.new_collection_metadata.to_account_info(),
+        collection_master_edition: accounts.new_collection_master_edition.to_account_info(),
+        collection_authority_record: accounts.new_collection_authority_record.to_account_info(),
+        token_metadata_program: accounts.token_metadata_program.to_account_info(),
+        system_program: accounts.system_program.to_account_info(),
+        rent: accounts.rent.to_account_info(),
     };
 
-    set_collection_helper(set_collection_helper_accounts)?;
+    approve_collection_authority_helper(approve_collection_authority_helper_accounts)?;
 
     Ok(())
 }
 
-pub fn set_collection_helper(accounts: SetCollectionHelperAccounts) -> Result<()> {
-    let metadata: Metadata =
-        Metadata::from_account_info(&accounts.collection_metadata.to_account_info())?;
+pub fn approve_collection_authority_helper(
+    accounts: ApproveCollectionAuthorityHelperAccounts,
+) -> Result<()> {
+    let ApproveCollectionAuthorityHelperAccounts {
+        payer,
+        authority_pda,
+        collection_update_authority,
+        collection_mint,
+        collection_metadata,
+        collection_master_edition,
+        collection_authority_record,
+        token_metadata_program,
+        system_program,
+        rent,
+    } = accounts;
 
-    if !cmp_pubkeys(&metadata.update_authority, &accounts.update_authority.key()) {
+    let collection_data: Metadata = Metadata::from_account_info(&collection_metadata)?;
+
+    if !cmp_pubkeys(
+        &collection_data.update_authority,
+        &collection_update_authority.key(),
+    ) {
         return err!(CandyError::IncorrectCollectionAuthority);
     }
 
-    if !cmp_pubkeys(&metadata.mint, &accounts.collection_mint.key()) {
+    if !cmp_pubkeys(&collection_data.mint, &collection_mint.key()) {
         return err!(CandyError::MintMismatch);
     }
 
-    let edition = accounts.collection_master_edition.to_account_info();
-    let authority_record = accounts.collection_authority_record.to_account_info();
+    assert_master_edition(&collection_data, &collection_master_edition)?;
 
-    assert_master_edition(&metadata, &edition)?;
+    let approve_collection_authority_ix = approve_collection_authority(
+        token_metadata_program.key(),
+        collection_authority_record.key(),
+        authority_pda.key(),
+        collection_update_authority.key(),
+        payer.key(),
+        collection_metadata.key(),
+        collection_mint.key(),
+    );
 
-    if authority_record.data_is_empty() {
+    if collection_authority_record.data_is_empty() {
         let approve_collection_infos = vec![
-            authority_record.clone(),
-            accounts.update_authority.to_account_info(),
-            accounts.update_authority.to_account_info(),
-            accounts.payer.to_account_info(),
-            accounts.collection_metadata.to_account_info(),
-            accounts.collection_mint.to_account_info(),
-            accounts.system_program.to_account_info(),
-            accounts.rent.to_account_info(),
+            collection_authority_record,
+            authority_pda,
+            collection_update_authority,
+            payer,
+            collection_metadata,
+            collection_mint,
+            system_program,
+            rent,
         ];
 
         invoke(
-            &approve_collection_authority(
-                accounts.token_metadata_program.key(),
-                authority_record.key(),
-                accounts.update_authority.key(),
-                accounts.update_authority.key(),
-                accounts.payer.key(),
-                accounts.collection_metadata.key(),
-                accounts.collection_mint.key(),
-            ),
+            &approve_collection_authority_ix,
             approve_collection_infos.as_slice(),
         )?;
     }
@@ -79,49 +128,63 @@ pub fn set_collection_helper(accounts: SetCollectionHelperAccounts) -> Result<()
     Ok(())
 }
 
-pub struct SetCollectionHelperAccounts<'info> {
-    /// CHECK: account checked in CPI
+pub struct ApproveCollectionAuthorityHelperAccounts<'info> {
+    /// CHECK:
     pub payer: AccountInfo<'info>,
-    /// CHECK: account checked in CPI
-    pub update_authority: AccountInfo<'info>,
-    /// CHECK: account checked in CPI
+    /// CHECK:
+    pub authority_pda: AccountInfo<'info>,
+    /// CHECK:
+    pub collection_update_authority: AccountInfo<'info>,
+    /// CHECK:
     pub collection_mint: AccountInfo<'info>,
-    /// CHECK: account checked in CPI
+    /// CHECK:
     pub collection_metadata: AccountInfo<'info>,
-    /// CHECK: account checked in CPI
+    /// CHECK:
     pub collection_master_edition: AccountInfo<'info>,
-    /// CHECK: account checked in CPI
+    /// CHECK:
     pub collection_authority_record: AccountInfo<'info>,
-    /// CHECK: account checked in CPI
+    /// CHECK:
     pub token_metadata_program: AccountInfo<'info>,
-    /// CHECK: account checked in CPI
+    /// CHECK:
     pub system_program: AccountInfo<'info>,
-    /// CHECK: account checked in CPI
+    /// CHECK:
     pub rent: AccountInfo<'info>,
 }
 
 /// Set the collection PDA for the candy machine
 #[derive(Accounts)]
+#[instruction(authority_pda_bump: u8)]
 pub struct SetCollection<'info> {
     #[account(mut, has_one = authority)]
     candy_machine: Account<'info, CandyMachine>,
     // candy machine authority
     authority: Signer<'info>,
+    /// CHECK: account checked in seeds constraint
+    #[account(
+        mut, seeds = [AUTHORITY_SEED.as_bytes(), candy_machine.to_account_info().key.as_ref()],
+        bump = authority_pda_bump
+    )]
+    authority_pda: UncheckedAccount<'info>,
     // payer of the transaction
     payer: Signer<'info>,
-    #[account(
-    seeds = [COLLECTION_SEED.as_bytes(), candy_machine.to_account_info().key.as_ref()],
-    bump
-    )]
-    /// CHECK: account checked in CPI
-    collection_metadata: UncheckedAccount<'info>,
     /// CHECK: account checked in CPI
     collection_mint: UncheckedAccount<'info>,
     /// CHECK: account checked in CPI
-    collection_master_edition: UncheckedAccount<'info>,
+    collection_metadata: UncheckedAccount<'info>,
     /// CHECK: account checked in CPI
     #[account(mut)]
     collection_authority_record: UncheckedAccount<'info>,
+    // update authority of the new collection NFT
+    new_collection_update_authority: Signer<'info>,
+    /// CHECK: account checked in CPI
+    new_collection_metadata: UncheckedAccount<'info>,
+    /// CHECK: account checked in CPI
+    new_collection_mint: UncheckedAccount<'info>,
+    /// CHECK: account checked in CPI
+    new_collection_master_edition: UncheckedAccount<'info>,
+    /// CHECK: account checked in CPI
+    #[account(mut)]
+    new_collection_authority_record: UncheckedAccount<'info>,
     /// CHECK: account checked in CPI
     #[account(address = mpl_token_metadata::id())]
     token_metadata_program: UncheckedAccount<'info>,
