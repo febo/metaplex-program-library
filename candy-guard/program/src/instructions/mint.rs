@@ -13,7 +13,6 @@ use crate::{
 
 pub fn mint<'info>(
     ctx: Context<'_, '_, '_, 'info, Mint<'info>>,
-    authority_pda_bump: u8,
     mint_args: Vec<u8>,
 ) -> Result<()> {
     let candy_guard = &ctx.accounts.candy_guard;
@@ -69,7 +68,7 @@ pub fn mint<'info>(
     // we are good to go, forward the transaction to the candy machine (if errors occur, the
     // actions are reverted and the trasaction fails)
 
-    cpi_mint(&ctx, authority_pda_bump)?;
+    cpi_mint(&ctx)?;
 
     // performs guard post-actions (errors might occur, which will cause the transaction to fail)
     // no bot tax at this point since the actions must be reverted in case of an error
@@ -102,7 +101,6 @@ fn validate<'info>(ctx: &Context<'_, '_, '_, 'info, Mint<'info>>) -> Result<()> 
 /// Send a mint transaction to the candy machine.
 fn cpi_mint<'info>(
     ctx: &Context<'_, '_, '_, 'info, Mint<'info>>,
-    authority_pda_bump: u8,
 ) -> Result<()> {
     let candy_guard = &ctx.accounts.candy_guard;
     // PDA signer for the transaction
@@ -123,6 +121,7 @@ fn cpi_mint<'info>(
         nft_mint: ctx.accounts.nft_mint.to_account_info(),
         nft_mint_authority: ctx.accounts.nft_mint_authority.to_account_info(),
         nft_metadata: ctx.accounts.nft_metadata.to_account_info(),
+        nft_master_edition: ctx.accounts.nft_master_edition.to_account_info(),
         collection_authority_record: ctx.accounts.collection_authority_record.to_account_info(),
         collection_mint: ctx.accounts.collection_mint.to_account_info(),
         collection_metadata: ctx.accounts.collection_metadata.to_account_info(),
@@ -133,12 +132,11 @@ fn cpi_mint<'info>(
         system_program: ctx.accounts.system_program.to_account_info(),
         rent: ctx.accounts.rent.to_account_info(),
         recent_slothashes: ctx.accounts.recent_slothashes.to_account_info(),
-        nft_master_edition: ctx.accounts.nft_master_edition.to_account_info(),
     };
 
     let cpi_ctx = CpiContext::new_with_signer(candy_machine_program, mint_ix, &signer);
 
-    mpl_candy_machine_core::cpi::mint(cpi_ctx, authority_pda_bump)
+    mpl_candy_machine_core::cpi::mint(cpi_ctx)
 }
 
 #[derive(Accounts)]
@@ -150,7 +148,7 @@ pub struct Mint<'info> {
     pub candy_machine_program: AccountInfo<'info>,
     #[account(
         mut,
-        constraint = candy_guard.key() == candy_machine.authority
+        constraint = candy_guard.key() == candy_machine.mint_authority
     )]
     pub candy_machine: Box<Account<'info, CandyMachine>>,
     // seeds and bump are not validated by the candy guard, they will be validated
