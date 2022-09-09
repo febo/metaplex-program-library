@@ -65,12 +65,7 @@
           "isSigner": false
         },
         {
-          "name": "updateAuthority",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "candyMachineCreator",
+          "name": "candyMachineAuthorityPda",
           "isMut": true,
           "isSigner": false
         },
@@ -80,27 +75,27 @@
           "isSigner": true
         },
         {
-          "name": "metadata",
+          "name": "nftMetadata",
           "isMut": true,
           "isSigner": false
         },
         {
-          "name": "mint",
+          "name": "nftMint",
           "isMut": true,
           "isSigner": false
         },
         {
-          "name": "mintAuthority",
+          "name": "nftMintAuthority",
           "isMut": false,
           "isSigner": true
         },
         {
-          "name": "mintUpdateAuthority",
+          "name": "nftMintUpdateAuthority",
           "isMut": false,
           "isSigner": true
         },
         {
-          "name": "masterEdition",
+          "name": "nftMasterEdition",
           "isMut": true,
           "isSigner": false
         },
@@ -121,6 +116,11 @@
         },
         {
           "name": "collectionMasterEdition",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "collectionUpdateAuthority",
           "isMut": false,
           "isSigner": false
         },
@@ -157,7 +157,7 @@
       ],
       "args": [
         {
-          "name": "creatorBump",
+          "name": "authorityPdaBump",
           "type": "u8"
         },
         {
