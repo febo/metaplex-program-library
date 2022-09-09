@@ -46,9 +46,9 @@ pub mod candy_machine_core {
     pub fn set_authority(
         ctx: Context<SetAuthority>,
         new_authority: Pubkey,
-        new_update_authority: Pubkey,
+        new_mint_authority: Pubkey,
     ) -> Result<()> {
-        instructions::set_authority(ctx, new_authority, new_update_authority)
+        instructions::set_authority(ctx, new_authority, new_mint_authority)
     }
 
     /// Update the candy machine configuration.
