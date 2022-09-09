@@ -37,9 +37,8 @@ pub mod candy_machine_core {
     /// Mint an NFT. Only the candy machine authority is allowed to mint.
     pub fn mint<'info>(
         ctx: Context<'_, '_, '_, 'info, Mint<'info>>,
-        authority_pda_bump: u8,
     ) -> Result<()> {
-        instructions::mint(ctx, authority_pda_bump)
+        instructions::mint(ctx)
     }
 
     /// Set the collection mint for the candy machine.

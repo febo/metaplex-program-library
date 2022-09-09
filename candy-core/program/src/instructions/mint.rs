@@ -18,7 +18,6 @@ use crate::{
 
 pub fn mint<'info>(
     ctx: Context<'_, '_, '_, 'info, Mint<'info>>,
-    authority_pda_bump: u8,
 ) -> Result<()> {
     // (1) validation
 
@@ -121,7 +120,7 @@ pub fn mint<'info>(
     let authority_seeds = [
         AUTHORITY_SEED.as_bytes(),
         cm_key.as_ref(),
-        &[authority_pda_bump],
+        &[*ctx.bumps.get("authority_pda").unwrap()],
     ];
 
     invoke_signed(
@@ -313,14 +312,17 @@ pub fn get_config_line(
 
 /// Mint a new NFT pseudo-randomly from the config array.
 #[derive(Accounts)]
-#[instruction(authority_pda_bump: u8)]
 pub struct Mint<'info> {
     #[account(mut, has_one = mint_authority)]
     candy_machine: Box<Account<'info, CandyMachine>>,
     /// CHECK: account constraints checked in account trait
-    #[account(seeds = [AUTHORITY_SEED.as_bytes(), candy_machine.key().as_ref()], bump = authority_pda_bump)]
+    #[account(
+        mut,
+        seeds = [AUTHORITY_SEED.as_bytes(), candy_machine.key().as_ref()],
+        bump
+    )]
     authority_pda: UncheckedAccount<'info>,
-    // candy machine authority (mint only allowed for the authority)
+    // candy machine mint_authority (mint only allowed for the mint_authority)
     mint_authority: Signer<'info>,
     #[account(mut)]
     payer: Signer<'info>,
