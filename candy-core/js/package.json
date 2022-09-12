@@ -47,11 +47,8 @@
     "@metaplex-foundation/beet-solana": "^0.3.0",
     "@metaplex-foundation/cusper": "^0.0.2",
     "@metaplex-foundation/js": "^0.15.0",
-    "@metaplex-foundation/mpl-auction-house": "^2.3.0",
-    "@metaplex-foundation/mpl-candy-machine": "^4.6.0",
-    "@metaplex-foundation/mpl-core": "^0.6.1",
-    "@metaplex-foundation/mpl-token-metadata": "^2.2.4",
-    "@solana/spl-token": "^0.2.0"
+    "@solana/spl-token": "^0.2.0",
+    "esbuild": "^0.15.7"
   },
   "devDependencies": {
     "@metaplex-foundation/amman": "^0.11.0",
