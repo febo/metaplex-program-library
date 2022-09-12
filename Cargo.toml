@@ -11,5 +11,6 @@ exclude = [
   "hydra/program",
   "candy-machine/program",
   "bubblegum/program",
-  "candy-wrapper/program",
+  "candy-core/program",
+  "candy-guard/program",
 ]

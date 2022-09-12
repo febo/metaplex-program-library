@@ -24,12 +24,22 @@ const programs = {
         label: "Candy Machine",
         programId: 'cndy3Z4yapfJBmL3ShUp5exZKqR3z33thTzeNMm2gRZ',
         deployPath: localDeployPath('mpl_candy_machine'),
-  },
-     hydra: {
-    label: 'Hydra',
-    programId: 'hyDQ4Nz1eYyegS6JfenyKwKzYxRsCWCriYSAjtzP4Vg',
-    deployPath: localDeployPath('mpl_hydra'),
-  },
+    },
+    candy_machine_core: {
+        label: "Candy Machine Core",
+        programId: 'cndy3CZK71ZHMp9ddpq5NVvQDx33o6cCYDf4JBAWCk7',
+        deployPath: localDeployPath('mpl_candy_machine_core'),
+    },
+    candy_guard: {
+        label: "Candy Guard",
+        programId: 'grd1hVewsa8dR1T1JfSFGzQUqgWmc1xXZ3uRRFJJ8XJ',
+        deployPath: localDeployPath('mpl_candy_guard'),
+    },
+    hydra: {
+        label: 'Hydra',
+        programId: 'hyDQ4Nz1eYyegS6JfenyKwKzYxRsCWCriYSAjtzP4Vg',
+        deployPath: localDeployPath('mpl_hydra'),
+    },
 };
 
 const validator = {
@@ -39,6 +49,7 @@ const validator = {
     resetLedger: true,
     verifyFees: false,
     jsonRpcUrl: LOCALHOST,
+    limitLedgerSize: 999999,
     websocketUrl: '',
     ledgerDir: tmpLedgerDir(),
 };
