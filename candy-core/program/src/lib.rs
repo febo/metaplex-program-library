@@ -37,8 +37,8 @@ pub mod candy_machine_core {
     }
 
     /// Set the collection mint for the candy machine.
-    pub fn set_collection(ctx: Context<SetCollection>, authority_pda_bump: u8) -> Result<()> {
-        instructions::set_collection(ctx, authority_pda_bump)
+    pub fn set_collection(ctx: Context<SetCollection>) -> Result<()> {
+        instructions::set_collection(ctx)
     }
 
     /// Set a new authority of the candy machine. Changing the authority has the

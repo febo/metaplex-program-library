@@ -89,6 +89,7 @@ pub struct Initialize<'info> {
     collection_mint: UncheckedAccount<'info>,
     /// CHECK: account checked in CPI
     collection_master_edition: UncheckedAccount<'info>,
+    #[account(mut)]
     collection_update_authority: Signer<'info>,
     /// CHECK: account checked in CPI
     #[account(mut)]

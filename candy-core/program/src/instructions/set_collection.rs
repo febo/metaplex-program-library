@@ -9,7 +9,7 @@ use solana_program::program::{invoke, invoke_signed};
 
 use crate::{cmp_pubkeys, constants::AUTHORITY_SEED, CandyError, CandyMachine};
 
-pub fn set_collection(ctx: Context<SetCollection>, authority_pda_bump: u8) -> Result<()> {
+pub fn set_collection(ctx: Context<SetCollection>) -> Result<()> {
     let accounts = ctx.accounts;
     let candy_machine = &mut accounts.candy_machine;
     if candy_machine.items_redeemed > 0 {
@@ -30,7 +30,7 @@ pub fn set_collection(ctx: Context<SetCollection>, authority_pda_bump: u8) -> Re
     let authority_seeds = [
         AUTHORITY_SEED.as_bytes(),
         cm_key.as_ref(),
-        &[authority_pda_bump],
+        &[*ctx.bumps.get("authority_pda").unwrap()],
     ];
 
     invoke_signed(
@@ -153,7 +153,6 @@ pub struct ApproveCollectionAuthorityHelperAccounts<'info> {
 
 /// Set the collection PDA for the candy machine
 #[derive(Accounts)]
-#[instruction(authority_pda_bump: u8)]
 pub struct SetCollection<'info> {
     #[account(mut, has_one = authority)]
     candy_machine: Account<'info, CandyMachine>,
@@ -162,7 +161,7 @@ pub struct SetCollection<'info> {
     /// CHECK: account checked in seeds constraint
     #[account(
         mut, seeds = [AUTHORITY_SEED.as_bytes(), candy_machine.to_account_info().key.as_ref()],
-        bump = authority_pda_bump
+        bump
     )]
     authority_pda: UncheckedAccount<'info>,
     // payer of the transaction
@@ -175,6 +174,7 @@ pub struct SetCollection<'info> {
     #[account(mut)]
     collection_authority_record: UncheckedAccount<'info>,
     // update authority of the new collection NFT
+    #[account(mut)]
     new_collection_update_authority: Signer<'info>,
     /// CHECK: account checked in CPI
     new_collection_metadata: UncheckedAccount<'info>,
