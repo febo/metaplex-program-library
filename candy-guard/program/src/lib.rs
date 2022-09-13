@@ -39,6 +39,11 @@ pub mod candy_guard {
         instructions::update(ctx, data)
     }
 
+    /// Withdraw the rent SOL from the candy guard account.
+    pub fn withdraw(ctx: Context<Withdraw>) -> Result<()> {
+        instructions::withdraw(ctx)
+    }
+
     /// Add a candy guard to a candy machine. After the guard is added, mint
     /// is only allowed through the candy guard.
     pub fn wrap(ctx: Context<Wrap>) -> Result<()> {
