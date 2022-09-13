@@ -1,8 +1,7 @@
 import test from 'tape';
 import { amman, InitTransactions, killStuckProcess } from './setup';
 import { CandyMachineHelper } from './utils';
-import { PublicKey } from '@solana/web3.js';
-import { PROGRAM_ID } from '../src/generated';
+import { AccountMeta } from '@solana/web3.js';
 import { BN } from 'bn.js';
 
 const API = new InitTransactions();
@@ -184,6 +183,7 @@ test('mint (CPI)', async (t) => {
     minterPair: minter,
     connection: minterConnection,
   } = await API.minter();
+
   const [, mintKeypair5] = await amman.genLabeledKeypair('CG Mint Account (minter)');
   const { tx: mintTx5 } = await API.mint(
     t,
@@ -195,9 +195,24 @@ test('mint (CPI)', async (t) => {
     minterConnection,
   );
   await mintTx5.assertSuccess(t);
+
+  const [, mintKeypair6] = await amman.genLabeledKeypair('CG Mint Account 2 (minter)');
+  const { tx: mintTx6 } = await API.mint(
+    t,
+    address,
+    candyMachine.publicKey,
+    minter,
+    mintKeypair6,
+    minterHandler,
+    minterConnection,
+    null,
+    null,
+    'Group 1',
+  );
+  await mintTx6.assertError(t, /Group not found/i);
 });
 
-test.only('mint from group', async (t) => {
+test('mint from group', async (t) => {
   // deploys a candy guard with a mint limit
 
   const { fstTxHandler, payerPair, connection } = await API.payer();
@@ -282,7 +297,17 @@ test.only('mint from group', async (t) => {
   } = await API.minter();
 
   const [, mintForMinter] = await amman.genLabeledKeypair('Mint Account (minter)');
-  const { tx: minterMintTx } = await API.mint(
+
+  const accounts: AccountMeta[] = [];
+  accounts.push({
+    pubkey: payerPair.publicKey,
+    isSigner: false,
+    isWritable: true,
+  });
+
+  // without specifying a group (should fail)
+
+  const { tx: minterMintTx1 } = await API.mint(
     t,
     candyGuard,
     candyMachine,
@@ -290,10 +315,27 @@ test.only('mint from group', async (t) => {
     mintForMinter,
     minterHandler,
     minterConnection,
-    null,
+    accounts,
     null,
     null,
   );
 
-  await minterMintTx.assertSuccess(t);
+  await minterMintTx1.assertError(t, /Missing required group label/i);
+
+  // specifying a group
+
+  const { tx: minterMintTx2 } = await API.mint(
+    t,
+    candyGuard,
+    candyMachine,
+    minterKeypair,
+    mintForMinter,
+    minterHandler,
+    minterConnection,
+    accounts,
+    null,
+    'OGs',
+  );
+
+  await minterMintTx2.assertSuccess(t);
 });
