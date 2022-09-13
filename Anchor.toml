@@ -2,8 +2,8 @@
 url = "https://anchor.projectserum.com"
 
 [provider]
-cluster = "localnet"
-wallet = "~/.config/solana/id.json"
+cluster = "devnet"
+wallet = "~/.config/solana/devnet.json"
 
 [programs.localnet]
 auction_house="hausS13jsjafwWwGqZTUQRmWyvyxn9EQpqMwV1PBBmk"
@@ -32,6 +32,5 @@ program = "target/deploy/mpl_gumdrop.so"
 [workspace]
 members = [
   "candy-core/program",
-  "candy-guard/program",
-  "token-metadata/program"
+  "candy-guard/program"
 ]

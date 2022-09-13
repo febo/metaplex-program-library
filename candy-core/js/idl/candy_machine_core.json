@@ -82,7 +82,7 @@
         },
         {
           "name": "collectionUpdateAuthority",
-          "isMut": false,
+          "isMut": true,
           "isSigner": true
         },
         {
@@ -257,7 +257,7 @@
         },
         {
           "name": "newCollectionUpdateAuthority",
-          "isMut": false,
+          "isMut": true,
           "isSigner": true
         },
         {
@@ -296,12 +296,7 @@
           "isSigner": false
         }
       ],
-      "args": [
-        {
-          "name": "authorityPdaBump",
-          "type": "u8"
-        }
-      ]
+      "args": []
     },
     {
       "name": "setAuthority",

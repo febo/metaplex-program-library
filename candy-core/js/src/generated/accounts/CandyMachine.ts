@@ -5,10 +5,13 @@
  * See: https://github.com/metaplex-foundation/solita
  */
 
-import * as beet from '@metaplex-foundation/beet';
-import * as web3 from '@solana/web3.js';
-import * as beetSolana from '@metaplex-foundation/beet-solana';
-import { CandyMachineData, candyMachineDataBeet } from '../types/CandyMachineData';
+import * as beet from '@metaplex-foundation/beet'
+import * as web3 from '@solana/web3.js'
+import * as beetSolana from '@metaplex-foundation/beet-solana'
+import {
+  CandyMachineData,
+  candyMachineDataBeet,
+} from '../types/CandyMachineData'
 
 /**
  * Arguments used to create {@link CandyMachine}
@@ -16,15 +19,15 @@ import { CandyMachineData, candyMachineDataBeet } from '../types/CandyMachineDat
  * @category generated
  */
 export type CandyMachineArgs = {
-  features: beet.bignum;
-  authority: web3.PublicKey;
-  mintAuthority: web3.PublicKey;
-  collectionMint: web3.PublicKey;
-  itemsRedeemed: beet.bignum;
-  data: CandyMachineData;
-};
+  features: beet.bignum
+  authority: web3.PublicKey
+  mintAuthority: web3.PublicKey
+  collectionMint: web3.PublicKey
+  itemsRedeemed: beet.bignum
+  data: CandyMachineData
+}
 
-export const candyMachineDiscriminator = [51, 173, 177, 113, 25, 241, 109, 189];
+export const candyMachineDiscriminator = [51, 173, 177, 113, 25, 241, 109, 189]
 /**
  * Holds the data for the {@link CandyMachine} Account and provides de/serialization
  * functionality for that data
@@ -39,7 +42,7 @@ export class CandyMachine implements CandyMachineArgs {
     readonly mintAuthority: web3.PublicKey,
     readonly collectionMint: web3.PublicKey,
     readonly itemsRedeemed: beet.bignum,
-    readonly data: CandyMachineData,
+    readonly data: CandyMachineData
   ) {}
 
   /**
@@ -52,8 +55,8 @@ export class CandyMachine implements CandyMachineArgs {
       args.mintAuthority,
       args.collectionMint,
       args.itemsRedeemed,
-      args.data,
-    );
+      args.data
+    )
   }
 
   /**
@@ -62,9 +65,9 @@ export class CandyMachine implements CandyMachineArgs {
    */
   static fromAccountInfo(
     accountInfo: web3.AccountInfo<Buffer>,
-    offset = 0,
+    offset = 0
   ): [CandyMachine, number] {
-    return CandyMachine.deserialize(accountInfo.data, offset);
+    return CandyMachine.deserialize(accountInfo.data, offset)
   }
 
   /**
@@ -75,13 +78,13 @@ export class CandyMachine implements CandyMachineArgs {
    */
   static async fromAccountAddress(
     connection: web3.Connection,
-    address: web3.PublicKey,
+    address: web3.PublicKey
   ): Promise<CandyMachine> {
-    const accountInfo = await connection.getAccountInfo(address);
+    const accountInfo = await connection.getAccountInfo(address)
     if (accountInfo == null) {
-      throw new Error(`Unable to find CandyMachine account at ${address}`);
+      throw new Error(`Unable to find CandyMachine account at ${address}`)
     }
-    return CandyMachine.fromAccountInfo(accountInfo, 0)[0];
+    return CandyMachine.fromAccountInfo(accountInfo, 0)[0]
   }
 
   /**
@@ -91,9 +94,11 @@ export class CandyMachine implements CandyMachineArgs {
    * @param programId - the program that owns the accounts we are filtering
    */
   static gpaBuilder(
-    programId: web3.PublicKey = new web3.PublicKey('cndy3CZK71ZHMp9ddpq5NVvQDx33o6cCYDf4JBAWCk7'),
+    programId: web3.PublicKey = new web3.PublicKey(
+      'cndy3CZK71ZHMp9ddpq5NVvQDx33o6cCYDf4JBAWCk7'
+    )
   ) {
-    return beetSolana.GpaBuilder.fromStruct(programId, candyMachineBeet);
+    return beetSolana.GpaBuilder.fromStruct(programId, candyMachineBeet)
   }
 
   /**
@@ -101,7 +106,7 @@ export class CandyMachine implements CandyMachineArgs {
    * @returns a tuple of the account data and the offset up to which the buffer was read to obtain it.
    */
   static deserialize(buf: Buffer, offset = 0): [CandyMachine, number] {
-    return candyMachineBeet.deserialize(buf, offset);
+    return candyMachineBeet.deserialize(buf, offset)
   }
 
   /**
@@ -112,7 +117,7 @@ export class CandyMachine implements CandyMachineArgs {
     return candyMachineBeet.serialize({
       accountDiscriminator: candyMachineDiscriminator,
       ...this,
-    });
+    })
   }
 
   /**
@@ -123,11 +128,11 @@ export class CandyMachine implements CandyMachineArgs {
    * depends on them
    */
   static byteSize(args: CandyMachineArgs) {
-    const instance = CandyMachine.fromArgs(args);
+    const instance = CandyMachine.fromArgs(args)
     return candyMachineBeet.toFixedFromValue({
       accountDiscriminator: candyMachineDiscriminator,
       ...instance,
-    }).byteSize;
+    }).byteSize
   }
 
   /**
@@ -141,9 +146,12 @@ export class CandyMachine implements CandyMachineArgs {
   static async getMinimumBalanceForRentExemption(
     args: CandyMachineArgs,
     connection: web3.Connection,
-    commitment?: web3.Commitment,
+    commitment?: web3.Commitment
   ): Promise<number> {
-    return connection.getMinimumBalanceForRentExemption(CandyMachine.byteSize(args), commitment);
+    return connection.getMinimumBalanceForRentExemption(
+      CandyMachine.byteSize(args),
+      commitment
+    )
   }
 
   /**
@@ -153,32 +161,32 @@ export class CandyMachine implements CandyMachineArgs {
   pretty() {
     return {
       features: (() => {
-        const x = <{ toNumber: () => number }>this.features;
+        const x = <{ toNumber: () => number }>this.features
         if (typeof x.toNumber === 'function') {
           try {
-            return x.toNumber();
+            return x.toNumber()
           } catch (_) {
-            return x;
+            return x
           }
         }
-        return x;
+        return x
       })(),
       authority: this.authority.toBase58(),
       mintAuthority: this.mintAuthority.toBase58(),
       collectionMint: this.collectionMint.toBase58(),
       itemsRedeemed: (() => {
-        const x = <{ toNumber: () => number }>this.itemsRedeemed;
+        const x = <{ toNumber: () => number }>this.itemsRedeemed
         if (typeof x.toNumber === 'function') {
           try {
-            return x.toNumber();
+            return x.toNumber()
           } catch (_) {
-            return x;
+            return x
           }
         }
-        return x;
+        return x
       })(),
       data: this.data,
-    };
+    }
   }
 }
 
@@ -189,7 +197,7 @@ export class CandyMachine implements CandyMachineArgs {
 export const candyMachineBeet = new beet.FixableBeetStruct<
   CandyMachine,
   CandyMachineArgs & {
-    accountDiscriminator: number[] /* size: 8 */;
+    accountDiscriminator: number[] /* size: 8 */
   }
 >(
   [
@@ -202,5 +210,5 @@ export const candyMachineBeet = new beet.FixableBeetStruct<
     ['data', candyMachineDataBeet],
   ],
   CandyMachine.fromArgs,
-  'CandyMachine',
-);
+  'CandyMachine'
+)
