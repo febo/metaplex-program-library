@@ -14,8 +14,8 @@ pub fn unwrap(ctx: Context<Unwrap>) -> Result<()> {
     // candy machine update_authority CPI
     mpl_candy_machine_core::cpi::set_authority(
         cpi_ctx,
-        ctx.accounts.authority.key(),
-        ctx.accounts.authority.key(),
+        ctx.accounts.candy_machine_authority.key(),
+        ctx.accounts.candy_machine_authority.key(),
     )?;
 
     Ok(())
@@ -23,17 +23,21 @@ pub fn unwrap(ctx: Context<Unwrap>) -> Result<()> {
 
 #[derive(Accounts)]
 pub struct Unwrap<'info> {
-    #[account(owner = crate::id())]
-    pub candy_guard: Account<'info, CandyGuard>,
     #[account(
-        mut,
         has_one = authority,
         constraint = candy_guard.key() == candy_machine.mint_authority
+    )]
+    pub candy_guard: Account<'info, CandyGuard>,
+    // candy guard authority
+    pub authority: Signer<'info>,
+    #[account(
+        mut,
+        constraint = candy_machine.authority == candy_machine_authority.key()
     )]
     pub candy_machine: Account<'info, CandyMachine>,
     /// CHECK: account constraints checked in account trait
     #[account(address = mpl_candy_machine_core::id())]
     pub candy_machine_program: AccountInfo<'info>,
     // candy machine authority
-    pub authority: Signer<'info>,
+    pub candy_machine_authority: Signer<'info>,
 }
