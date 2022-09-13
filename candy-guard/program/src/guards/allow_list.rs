@@ -36,7 +36,9 @@ impl Condition for AllowList {
         // updates the number of bytes read
         evaluation_context.args_cursor += 4 + (merkle_proof.len() * 32);
 
-        if !verify(&merkle_proof[..], &self.merkle_root, &user.to_bytes()) {
+        let leaf = solana_program::keccak::hashv(&[user.to_string().as_bytes()]);
+
+        if !verify(&merkle_proof[..], &self.merkle_root, &leaf.0) {
             return err!(CandyGuardError::AddressNotFoundInAllowedList);
         }
 
@@ -58,11 +60,11 @@ fn verify(proof: &[[u8; 32]], root: &[u8; 32], leaf: &[u8; 32]) -> bool {
         if computed_hash <= *proof_element {
             // Hash(current computed hash + current element of the proof)
             computed_hash =
-                solana_program::keccak::hashv(&[&[0x01], &computed_hash, proof_element]).0
+                solana_program::keccak::hashv(&[&computed_hash, proof_element]).0
         } else {
             // Hash(current element of the proof + current computed hash)
             computed_hash =
-                solana_program::keccak::hashv(&[&[0x01], proof_element, &computed_hash]).0;
+                solana_program::keccak::hashv(&[proof_element, &computed_hash]).0;
         }
     }
     // Check if the computed hash (root) is equal to the provided root
