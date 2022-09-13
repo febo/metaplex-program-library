@@ -39,7 +39,7 @@ impl Condition for MintLimit {
         let allowance_account = Self::get_account_info(ctx, evaluation_context.account_cursor)?;
         evaluation_context
             .indices
-            .insert("allowlist_index", evaluation_context.account_cursor);
+            .insert("mintlimit_index", evaluation_context.account_cursor);
         evaluation_context.account_cursor += 1;
 
         let user = ctx.accounts.payer.key();
@@ -68,7 +68,7 @@ impl Condition for MintLimit {
         evaluation_context: &mut EvaluationContext,
     ) -> Result<()> {
         let allowance_account =
-            Self::get_account_info(ctx, evaluation_context.indices["allowlist_index"])?;
+            Self::get_account_info(ctx, evaluation_context.indices["mintlimit_index"])?;
 
         let user = ctx.accounts.payer.key();
         let candy_guard_key = &ctx.accounts.candy_guard.key();
