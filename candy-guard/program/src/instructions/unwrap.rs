@@ -23,12 +23,17 @@ pub fn unwrap(ctx: Context<Unwrap>) -> Result<()> {
 
 #[derive(Accounts)]
 pub struct Unwrap<'info> {
-    #[account(has_one = authority)]
+    #[account(owner = crate::id())]
     pub candy_guard: Account<'info, CandyGuard>,
-    #[account(mut, has_one = authority, constraint = candy_guard.key() == candy_machine.mint_authority)]
+    #[account(
+        mut,
+        has_one = authority,
+        constraint = candy_guard.key() == candy_machine.mint_authority
+    )]
     pub candy_machine: Account<'info, CandyMachine>,
     /// CHECK: account constraints checked in account trait
     #[account(address = mpl_candy_machine_core::id())]
     pub candy_machine_program: AccountInfo<'info>,
+    // candy machine authority
     pub authority: Signer<'info>,
 }

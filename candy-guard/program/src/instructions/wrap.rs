@@ -22,12 +22,13 @@ pub fn wrap(ctx: Context<Wrap>) -> Result<()> {
 
 #[derive(Accounts)]
 pub struct Wrap<'info> {
-    #[account(has_one = authority)]
+    #[account(owner = crate::id())]
     pub candy_guard: Account<'info, CandyGuard>,
     #[account(mut, has_one = authority, owner = mpl_candy_machine_core::id())]
     pub candy_machine: Account<'info, CandyMachine>,
     /// CHECK: account constraints checked in account trait
     #[account(address = mpl_candy_machine_core::id())]
     pub candy_machine_program: AccountInfo<'info>,
+    // candy machine authority
     pub authority: Signer<'info>,
 }

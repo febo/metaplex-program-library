@@ -26,9 +26,9 @@ pub struct CandyGuard {
     //
     // available guards:
     //  1) bot tax
-    //  2) live date
-    //  3) lamports
-    //  4) spltoken
+    //  2) lamports
+    //  3) spl token
+    //  4) live date
     //  5) third party signer
     //  6) whitelist
     //  7) gatekeeper
