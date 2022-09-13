@@ -224,6 +224,25 @@
       ]
     },
     {
+      "name": "withdraw",
+      "docs": [
+        "Withdraw the rent SOL from the candy guard account."
+      ],
+      "accounts": [
+        {
+          "name": "candyGuard",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": true,
+          "isSigner": true
+        }
+      ],
+      "args": []
+    },
+    {
       "name": "wrap",
       "docs": [
         "Add a candy guard to a candy machine. After the guard is added, mint",
