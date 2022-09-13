@@ -3,14 +3,15 @@ import { amman, InitTransactions, killStuckProcess } from './setup';
 import { Metaplex, keypairIdentity } from '@metaplex-foundation/js';
 import { AccountMeta, PublicKey } from '@solana/web3.js';
 import { ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID } from '@solana/spl-token';
-import { METAPLEX_PROGRAM_ID } from './utils';
+import { METAPLEX_PROGRAM_ID, spokSamePubkey } from './utils';
 import { CandyMachine } from '../../../candy-core/js/src/generated';
+import spok from 'spok';
 
 const API = new InitTransactions();
 
 killStuckProcess();
 
-test.only('nft payment (burn)', async (t) => {
+test('nft payment (burn)', async (t) => {
   const { fstTxHandler, payerPair, connection } = await API.payer();
 
   const data = {
@@ -75,7 +76,6 @@ test.only('nft payment (burn)', async (t) => {
       nftPayment: {
         burn: true,
         requiredCollection: candyMachineObject.collectionMint,
-        wallet: candyGuard,
       },
     },
     groups: null,
@@ -173,8 +173,11 @@ test.only('nft payment (burn)', async (t) => {
   await authorityMintTx2.assertSuccess(t);
 });
 
-test('nft payment as minter (burn)', async (t) => {
-  const { fstTxHandler, payerPair, connection } = await API.payer();
+test.only('nft payment as minter (burn)', async (t) => {
+  const { fstTxHandler: payerHandler, payerPair, connection: payerConnection } = await API.payer();
+
+  // the mint from the first candy machine will be used as the payment
+  // in the second candy machine
 
   const data = {
     default: {
@@ -199,8 +202,8 @@ test('nft payment as minter (burn)', async (t) => {
     t,
     data,
     payerPair,
-    fstTxHandler,
-    connection,
+    payerHandler,
+    payerConnection,
   );
 
   // mint (as a minter)
@@ -222,11 +225,12 @@ test('nft payment as minter (burn)', async (t) => {
   );
   await minterMintTx.assertSuccess(t);
 
-  // enables the nft_payment guard
+  // enables the nft_payment guard on a second candy machine using the
+  // collectin info of the first
 
-  const candyMachineObject = await CandyMachine.fromAccountAddress(connection, candyMachine);
+  const candyMachineObject = await CandyMachine.fromAccountAddress(payerConnection, candyMachine);
 
-  const updatedData = {
+  const secondData = {
     default: {
       botTax: null,
       liveDate: {
@@ -248,17 +252,25 @@ test('nft payment as minter (burn)', async (t) => {
     groups: null,
   };
 
-  const { tx: updateTx } = await API.update(t, candyGuard, updatedData, payerPair, fstTxHandler);
-  await updateTx.assertSuccess(t);
+  const { candyGuard: secondCandyGuard, candyMachine: secondCandyMachine } = await API.deploy(
+    t,
+    secondData,
+    payerPair,
+    payerHandler,
+    payerConnection,
+  );
 
-  // mint (as a minter)
+  // mint from the second (gated) candy machine
 
-  const metaplex = Metaplex.make(connection).use(keypairIdentity(payerPair));
+  const metaplex = Metaplex.make(minterConnection).use(keypairIdentity(minter));
   const nft = await metaplex.nfts().findByMint({ mintAddress: mintForMinter.publicKey }).run();
   const collection = await metaplex
     .nfts()
     .findByMint({ mintAddress: candyMachineObject.collectionMint })
     .run();
+
+  spok(t, nft.collection?.address, spokSamePubkey(candyMachineObject.collectionMint));
+
   const paymentGuardAccounts: AccountMeta[] = [];
 
   // token account
@@ -308,15 +320,50 @@ test('nft payment as minter (burn)', async (t) => {
   const [, mintForMinter2] = await amman.genLabeledKeypair('Mint Account 2 (minter)');
   const { tx: minterMintTx2 } = await API.mint(
     t,
-    candyGuard,
-    candyMachine,
+    secondCandyGuard,
+    secondCandyMachine,
     minter,
     mintForMinter2,
-    fstTxHandler,
-    connection,
+    minterHandler,
+    minterConnection,
     paymentGuardAccounts,
   );
   await minterMintTx2.assertSuccess(t);
+
+  const secondCandyMachineObject = await CandyMachine.fromAccountAddress(
+    payerConnection,
+    secondCandyMachine,
+  );
+  const secondNft = await metaplex
+    .nfts()
+    .findByMint({ mintAddress: mintForMinter2.publicKey })
+    .run();
+
+  spok(t, secondNft.collection, {
+    address: spokSamePubkey(secondCandyMachineObject.collectionMint),
+  });
+
+  try {
+    await metaplex.nfts().findByMint({ mintAddress: mintForMinter.publicKey }).run();
+    t.error('failed to burn gate NFT');
+  } catch {
+    t.pass('gate NFT was not found');
+  }
+
+  // trying to mint again without a valid NFT
+
+  const [, mintForMinter3] = await amman.genLabeledKeypair('Mint Account 3 (minter)');
+  const { tx: minterMintTx3 } = await API.mint(
+    t,
+    secondCandyGuard,
+    secondCandyMachine,
+    minter,
+    mintForMinter3,
+    minterHandler,
+    minterConnection,
+    paymentGuardAccounts,
+  );
+  await minterMintTx3.assertError(t);
 });
 
 test('nft payment (transfer)', async (t) => {

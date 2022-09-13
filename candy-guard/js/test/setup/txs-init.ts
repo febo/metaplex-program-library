@@ -153,9 +153,9 @@ export class InitTransactions {
   ): Promise<{ tx: ConfirmedTransactionAssertablePromise }> {
     const accounts: WrapInstructionAccounts = {
       candyGuard,
-      authority: payer.publicKey,
       candyMachine: candyMachine,
       candyMachineProgram: CANDY_MACHINE_PROGRAM,
+      authority: payer.publicKey,
     };
 
     const tx = new Transaction().add(createWrapInstruction(accounts));
@@ -199,6 +199,7 @@ export class InitTransactions {
     handler: PayerTransactionHandler,
     connection: Connection,
     remainingAccounts?: AccountMeta[] | null,
+    mintArgs?: Uint8Array | null
   ): Promise<{ tx: ConfirmedTransactionAssertablePromise }> {
     // candy machine object
     const candyMachineObject = await CandyMachine.fromAccountAddress(connection, candyMachine);
@@ -244,8 +245,12 @@ export class InitTransactions {
       instructionSysvarAccount: SYSVAR_INSTRUCTIONS_PUBKEY,
     };
 
+    if (!mintArgs) {
+      mintArgs = new Uint8Array();
+    }
+
     const args: MintInstructionArgs = {
-      mintArgs: new Uint8Array(),
+      mintArgs,
     };
 
     const ixs: TransactionInstruction[] = [];
