@@ -4,6 +4,7 @@ export * from './CandyGuardData';
 export * from './EndSettingType';
 export * from './EndSettings';
 export * from './Gatekeeper';
+export * from './Group';
 export * from './GuardSet';
 export * from './Lamports';
 export * from './LiveDate';

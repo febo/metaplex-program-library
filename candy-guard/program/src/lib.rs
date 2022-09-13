@@ -24,8 +24,9 @@ pub mod candy_guard {
     pub fn mint<'info>(
         ctx: Context<'_, '_, '_, 'info, Mint<'info>>,
         mint_args: Vec<u8>,
+        label: Option<String>,
     ) -> Result<()> {
-        instructions::mint(ctx, mint_args)
+        instructions::mint(ctx, mint_args, label)
     }
 
     /// Remove a candy guard from a candy machine, setting the authority to the

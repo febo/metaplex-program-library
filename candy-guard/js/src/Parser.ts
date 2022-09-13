@@ -16,6 +16,7 @@ import { logDebug } from './utils/log';
 import { mintLimitBeet } from './generated/types/MintLimit';
 import { GuardSet } from './generated/types/GuardSet';
 import { nftPaymentBeet } from './generated/types/NftPayment';
+import { Group } from './generated/types/Group';
 
 /**
  * Matching the guards of the related struct in the Rust program.
@@ -74,6 +75,7 @@ const GUARDS_SIZE = {
   /* 11 */ nftPayment: 33,
 };
 const GUARDS_COUNT = 11;
+const MAX_LABEL_LENGTH = 6;
 
 function determineGuards(buffer: Buffer): Guards {
   const enabled = new BN(beet.u64.read(buffer, 0)).toNumber();
@@ -117,13 +119,15 @@ export function parseData(buffer: Buffer): CandyGuardData {
   const { guardSet: defaultSet, offset } = parseGuardSet(buffer);
   // retrieves the number of groups
   const groupsCount = new BN(beet.u32.read(buffer, offset)).toNumber();
-  const groups: GuardSet[] = [];
+  const groups: Group[] = [];
 
   let cursor = beet.u32.byteSize + offset;
   for (let i = 0; i < groupsCount; i++) {
-    // parses each individual guard set
-    const { guardSet: group, offset } = parseGuardSet(buffer.subarray(cursor));
-    groups.push(group);
+    // parses each individual group
+    const label = buffer.subarray(cursor, cursor + MAX_LABEL_LENGTH).toString();
+    cursor += MAX_LABEL_LENGTH;
+    const { guardSet: guards, offset } = parseGuardSet(buffer.subarray(cursor));
+    groups.push({ label, guards });
     cursor += offset;
   }
 

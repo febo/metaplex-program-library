@@ -57,6 +57,7 @@ import {
   keypairIdentity,
   Metaplex,
 } from '@metaplex-foundation/js';
+import { coption } from '@metaplex-foundation/beet';
 
 const HELPER = new CandyMachineHelper();
 
@@ -65,6 +66,8 @@ export class InitTransactions {
   constructor(readonly resuseKeypairs = false) {
     this.getKeypair = resuseKeypairs ? amman.loadOrGenKeypair : amman.genLabeledKeypair;
   }
+
+  // wallets
 
   async payer() {
     const [payer, payerPair] = await this.getKeypair('Payer');
@@ -113,6 +116,8 @@ export class InitTransactions {
       minterPair,
     };
   }
+
+  // instructions
 
   async initialize(
     t: Test,
@@ -199,7 +204,8 @@ export class InitTransactions {
     handler: PayerTransactionHandler,
     connection: Connection,
     remainingAccounts?: AccountMeta[] | null,
-    mintArgs?: Uint8Array | null
+    mintArgs?: Uint8Array | null,
+    label?: string | null,
   ): Promise<{ tx: ConfirmedTransactionAssertablePromise }> {
     // candy machine object
     const candyMachineObject = await CandyMachine.fromAccountAddress(connection, candyMachine);
@@ -251,6 +257,7 @@ export class InitTransactions {
 
     const args: MintInstructionArgs = {
       mintArgs,
+      label: label ?? null,
     };
 
     const ixs: TransactionInstruction[] = [];

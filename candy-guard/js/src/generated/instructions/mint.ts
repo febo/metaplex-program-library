@@ -16,6 +16,7 @@ import * as web3 from '@solana/web3.js';
  */
 export type MintInstructionArgs = {
   mintArgs: Uint8Array;
+  label: beet.COption<string>;
 };
 /**
  * @category Instructions
@@ -30,6 +31,7 @@ export const mintStruct = new beet.FixableBeetArgsStruct<
   [
     ['instructionDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)],
     ['mintArgs', beet.bytes],
+    ['label', beet.coption(beet.utf8String)],
   ],
   'MintInstructionArgs',
 );

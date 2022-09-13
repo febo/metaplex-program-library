@@ -154,6 +154,12 @@
         {
           "name": "mintArgs",
           "type": "bytes"
+        },
+        {
+          "name": "label",
+          "type": {
+            "option": "string"
+          }
         }
       ]
     },
@@ -544,7 +550,7 @@
             "type": {
               "option": {
                 "vec": {
-                  "defined": "GuardSet"
+                  "defined": "Group"
                 }
               }
             }
@@ -553,7 +559,32 @@
       }
     },
     {
+      "name": "Group",
+      "docs": [
+        "A group represent a specific set of guards. When groups are used, transactions",
+        "must specify which group should be used during validation."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "label",
+            "type": "string"
+          },
+          {
+            "name": "guards",
+            "type": {
+              "defined": "GuardSet"
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "GuardSet",
+      "docs": [
+        "The set of guards available."
+      ],
       "type": {
         "kind": "struct",
         "fields": [
@@ -753,96 +784,111 @@
     },
     {
       "code": 6008,
+      "name": "MissingGroupLabel",
+      "msg": "Missing group label"
+    },
+    {
+      "code": 6009,
+      "name": "GroupNotFound",
+      "msg": "Group not found"
+    },
+    {
+      "code": 6010,
+      "name": "LabelExceededLength",
+      "msg": "Group not found"
+    },
+    {
+      "code": 6011,
       "name": "CollectionKeyMismatch",
       "msg": "Collection public key mismatch"
     },
     {
-      "code": 6009,
+      "code": 6012,
       "name": "MissingCollectionAccounts",
       "msg": "Missing collection accounts"
     },
     {
-      "code": 6010,
+      "code": 6013,
       "name": "CollectionUpdateAuthorityKeyMismatch",
       "msg": "Collection update authority public key mismatch"
     },
     {
-      "code": 6011,
+      "code": 6014,
       "name": "MintNotLastTransaction",
       "msg": "Mint must be the last instructions of the transaction"
     },
     {
-      "code": 6012,
+      "code": 6015,
       "name": "MintNotLive",
       "msg": "Mint is not live"
     },
     {
-      "code": 6013,
+      "code": 6016,
       "name": "NotEnoughSOL",
       "msg": "Not enough SOL to pay for the mint"
     },
     {
-      "code": 6014,
+      "code": 6017,
       "name": "TokenTransferFailed",
       "msg": "Token transfer failed"
     },
     {
-      "code": 6015,
+      "code": 6018,
       "name": "NotEnoughTokens",
       "msg": "Not enough tokens to pay for this minting"
     },
     {
-      "code": 6016,
+      "code": 6019,
       "name": "MissingRequiredSignature",
       "msg": "A signature was required but not found"
     },
     {
-      "code": 6017,
+      "code": 6020,
       "name": "TokenBurnFailed",
       "msg": "Token burn failed"
     },
     {
-      "code": 6018,
+      "code": 6021,
       "name": "NoWhitelistToken",
       "msg": "No whitelist token present"
     },
     {
-      "code": 6019,
+      "code": 6022,
       "name": "GatewayTokenInvalid",
       "msg": "Gateway token is not valid"
     },
     {
-      "code": 6020,
+      "code": 6023,
       "name": "AfterEndSettingsDate",
       "msg": "Current time is after the set end settings date"
     },
     {
-      "code": 6021,
+      "code": 6024,
       "name": "AfterEndSettingsMintAmount",
       "msg": "Current items minted is at the set end settings amount"
     },
     {
-      "code": 6022,
+      "code": 6025,
       "name": "InvalidMintTime",
       "msg": "Current time is not within the allowed mint time"
     },
     {
-      "code": 6023,
+      "code": 6026,
       "name": "AddressNotFoundInAllowedList",
       "msg": "Address not found on the allowed list"
     },
     {
-      "code": 6024,
+      "code": 6027,
       "name": "MissingAllowedListProof",
       "msg": "Missing allowed list proof"
     },
     {
-      "code": 6025,
+      "code": 6028,
       "name": "AllowedMintLimitReached",
       "msg": "The maximum number of allowed mints was reached"
     },
     {
-      "code": 6026,
+      "code": 6029,
       "name": "InvalidNFTCollectionPayment",
       "msg": "Invalid NFT Collection Payment"
     }

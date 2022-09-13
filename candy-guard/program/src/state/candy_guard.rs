@@ -1,6 +1,7 @@
 use anchor_lang::{prelude::*, AnchorDeserialize};
+use solana_program::program_memory::sol_memcmp;
 
-use crate::guards::*;
+use crate::{errors::CandyGuardError, guards::*};
 use mpl_candy_guard_derive::GuardSet;
 
 // Bytes offset for the start of the data section:
@@ -9,6 +10,12 @@ use mpl_candy_guard_derive::GuardSet;
 //  +  1 (bump)
 //  + 32 (authority)
 pub const DATA_OFFSET: usize = 8 + 32 + 1 + 32;
+
+// Maximim group label size.
+pub const MAX_LABEL_SIZE: usize = 6;
+
+// Seed value for PDA.
+pub const SEED: &[u8] = b"candy_guard";
 
 #[account]
 #[derive(Default)]
@@ -41,130 +48,18 @@ pub struct CandyGuard {
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug)]
 pub struct CandyGuardData {
     pub default: GuardSet,
-    pub groups: Option<Vec<GuardSet>>,
+    pub groups: Option<Vec<Group>>,
 }
 
-impl CandyGuardData {
-    /// Serialize the candy guard data into the specified data array.
-    pub fn save(&self, data: &mut [u8]) -> Result<()> {
-        let mut cursor = 0;
-
-        // saves the 'default' guard set
-        let _ = self.default.to_data(data)?;
-        cursor += self.default.size();
-
-        // stores the number of 'groups' guard set
-        let group_counter = if let Some(groups) = &self.groups {
-            groups.len() as u32
-        } else {
-            0
-        };
-        data[cursor..cursor + 4].copy_from_slice(&u32::to_le_bytes(group_counter));
-        cursor += 4;
-
-        // saves each individual 'groups' guard set
-        if let Some(groups) = &self.groups {
-            for group in groups {
-                let _ = group.to_data(&mut data[cursor..])?;
-                cursor += group.size();
-            }
-        }
-
-        Ok(())
-    }
-
-    /// Deserializes the guards. Only attempts the deserialization of individuals guards
-    /// if the data slice is large enough.
-    pub fn load(data: &[u8]) -> Result<Self> {
-        let (default, _) = GuardSet::from_data(data)?;
-        let mut cursor = default.size();
-
-        let group_counter = u32::from_le_bytes(*arrayref::array_ref![data, cursor, 4]);
-        cursor += 4;
-
-        let groups = if group_counter > 0 {
-            let mut groups = Vec::with_capacity(group_counter as usize);
-
-            for _i in 0..group_counter {
-                let (group, _) = GuardSet::from_data(&data[cursor..])?;
-                cursor += group.size();
-                groups.push(group);
-            }
-
-            Some(groups)
-        } else {
-            None
-        };
-
-        Ok(Self { default, groups })
-    }
-
-    pub fn active_set(data: &[u8]) -> Result<GuardSet> {
-        // root guard set
-        let (mut root, _) = GuardSet::from_data(data)?;
-        let mut cursor = root.size();
-
-        // number of groups
-        let group_counter = u32::from_le_bytes(*arrayref::array_ref![data, cursor, 4]);
-        cursor += 4;
-
-        // 1 - timestamp
-        // 2 - data offset
-        let mut active = (0, 0);
-
-        if group_counter > 0 {
-            let clock = Clock::get()?;
-
-            // determines the active guard set based on the live date: the active one has
-            // the latest live data that is earlier than the current timestamp
-            for _i in 0..group_counter {
-                let features = u64::from_le_bytes(*arrayref::array_ref![data, cursor, 8]);
-
-                if LiveDate::is_enabled(features) {
-                    let inner_cursor = 8 + if BotTax::is_enabled(features) {
-                        BotTax::size()
-                    } else {
-                        0
-                    };
-
-                    let live_date = LiveDate::load(data, inner_cursor)?.unwrap();
-
-                    if let Some(date) = live_date.date {
-                        if date > active.0 && date < clock.unix_timestamp {
-                            active.0 = date;
-                            active.1 = cursor;
-                        }
-                    }
-                }
-
-                cursor += GuardSet::bytes_count(features);
-            }
-
-            // deserialize the active group
-
-            (_, cursor) = active;
-
-            if cursor > 0 {
-                let (group, _) = GuardSet::from_data(&data[cursor..])?;
-                root.merge(group);
-            }
-        }
-
-        Ok(root)
-    }
-
-    pub fn size(&self) -> usize {
-        let mut size = DATA_OFFSET + self.default.size();
-        size += 4; // u32 (number of groups)
-
-        if let Some(groups) = &self.groups {
-            size += groups.iter().map(|group| group.size()).sum::<usize>();
-        }
-
-        size
-    }
+/// A group represent a specific set of guards. When groups are used, transactions
+/// must specify which group should be used during validation.
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug)]
+pub struct Group {
+    pub label: String,
+    pub guards: GuardSet,
 }
 
+/// The set of guards available.
 #[derive(GuardSet, AnchorSerialize, AnchorDeserialize, Clone, Debug)]
 pub struct GuardSet {
     /// Last instruction check and bot tax (penalty for invalid transactions).
@@ -189,4 +84,118 @@ pub struct GuardSet {
     pub mint_limit: Option<MintLimit>,
     /// NFT Payment
     pub nft_payment: Option<NftPayment>,
+}
+
+impl CandyGuardData {
+    /// Serialize the candy guard data into the specified data array.
+    pub fn save(&self, data: &mut [u8]) -> Result<()> {
+        let mut cursor = 0;
+
+        // saves the 'default' guard set
+        let _ = self.default.to_data(data)?;
+        cursor += self.default.size();
+
+        // stores the number of 'groups' guard set
+        let group_counter = if let Some(groups) = &self.groups {
+            groups.len() as u32
+        } else {
+            0
+        };
+        data[cursor..cursor + 4].copy_from_slice(&u32::to_le_bytes(group_counter));
+        cursor += 4;
+
+        // saves each individual 'groups' guard set
+        if let Some(groups) = &self.groups {
+            for group in groups {
+                // label
+                if group.label.len() > MAX_LABEL_SIZE {
+                    return err!(CandyGuardError::LabelExceededLength);
+                }
+                data[cursor..cursor + group.label.len()].copy_from_slice(group.label.as_bytes());
+                cursor += MAX_LABEL_SIZE;
+                // guard set
+                let _ = group.guards.to_data(&mut data[cursor..])?;
+                cursor += group.guards.size();
+            }
+        }
+
+        Ok(())
+    }
+
+    /// Deserializes the guards. Only attempts the deserialization of individuals guards
+    /// if the data slice is large enough.
+    pub fn load(data: &[u8]) -> Result<Self> {
+        let (default, _) = GuardSet::from_data(data)?;
+        let mut cursor = default.size();
+
+        let group_counter = u32::from_le_bytes(*arrayref::array_ref![data, cursor, 4]);
+        cursor += 4;
+
+        let groups = if group_counter > 0 {
+            let mut groups = Vec::with_capacity(group_counter as usize);
+
+            for _i in 0..group_counter {
+                let label = String::try_from_slice(&data[cursor..])?;
+                cursor += MAX_LABEL_SIZE;
+                let (guards, _) = GuardSet::from_data(&data[cursor..])?;
+                cursor += guards.size();
+                groups.push(Group { label, guards });
+            }
+
+            Some(groups)
+        } else {
+            None
+        };
+
+        Ok(Self { default, groups })
+    }
+
+    pub fn active_set(data: &[u8], label: Option<String>) -> Result<GuardSet> {
+        // root guard set
+        let (mut root, _) = GuardSet::from_data(data)?;
+        let mut cursor = root.size();
+
+        // number of groups
+        let group_counter = u32::from_le_bytes(*arrayref::array_ref![data, cursor, 4]);
+        cursor += 4;
+
+        if group_counter > 0 {
+            if let Some(label) = label {
+                let label_slice = label.as_bytes();
+                // retrieves the selected gorup
+                for _i in 0..group_counter {
+                    if sol_memcmp(label_slice, &data[cursor..], label_slice.len()) == 0 {
+                        cursor += MAX_LABEL_SIZE;
+                        let (guards, _) = GuardSet::from_data(&data[cursor..])?;
+                        root.merge(guards);
+                        // we found our group
+                        return Ok(root);
+                    } else {
+                        cursor += MAX_LABEL_SIZE;
+                        let features = u64::from_le_bytes(*arrayref::array_ref![data, cursor, 8]);
+                        cursor += GuardSet::bytes_count(features);
+                    }
+                }
+            }
+            return err!(CandyGuardError::GroupNotFound);
+        } else if label.is_some() {
+            return err!(CandyGuardError::MissingGroupLabel);
+        }
+
+        Ok(root)
+    }
+
+    pub fn size(&self) -> usize {
+        let mut size = DATA_OFFSET + self.default.size();
+        size += 4; // u32 (number of groups)
+
+        if let Some(groups) = &self.groups {
+            size += groups
+                .iter()
+                .map(|group| MAX_LABEL_SIZE + group.guards.size())
+                .sum::<usize>();
+        }
+
+        size
+    }
 }

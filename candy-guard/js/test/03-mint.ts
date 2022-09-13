@@ -1,6 +1,9 @@
 import test from 'tape';
 import { amman, InitTransactions, killStuckProcess } from './setup';
 import { CandyMachineHelper } from './utils';
+import { PublicKey } from '@solana/web3.js';
+import { PROGRAM_ID } from '../src/generated';
+import { BN } from 'bn.js';
 
 const API = new InitTransactions();
 const HELPER = new CandyMachineHelper();
@@ -192,4 +195,105 @@ test('mint (CPI)', async (t) => {
     minterConnection,
   );
   await mintTx5.assertSuccess(t);
+});
+
+test.only('mint from group', async (t) => {
+  // deploys a candy guard with a mint limit
+
+  const { fstTxHandler, payerPair, connection } = await API.payer();
+
+  // date of the 'default' guard is way in the future
+  const data = {
+    default: {
+      botTax: null,
+      liveDate: {
+        date: 64091606400,
+      },
+      lamports: null,
+      splToken: null,
+      thirdPartySigner: null,
+      whitelist: null,
+      gatekeeper: null,
+      endSettings: null,
+      allowList: null,
+      mintLimit: null,
+      nftPayment: null,
+    },
+    groups: [
+      {
+        label: 'VIP',
+        guards: {
+          botTax: null,
+          liveDate: {
+            date: 1662394820,
+          },
+          lamports: {
+            amount: new BN(100000000),
+            destination: payerPair.publicKey,
+          },
+          splToken: null,
+          thirdPartySigner: null,
+          whitelist: null,
+          gatekeeper: null,
+          endSettings: null,
+          allowList: null,
+          mintLimit: null,
+          nftPayment: null,
+        },
+      },
+      {
+        label: 'OGs',
+        guards: {
+          botTax: null,
+          liveDate: {
+            date: 1662394820,
+          },
+          lamports: {
+            amount: new BN(50000000),
+            destination: payerPair.publicKey,
+          },
+          splToken: null,
+          thirdPartySigner: null,
+          whitelist: null,
+          gatekeeper: null,
+          endSettings: null,
+          allowList: null,
+          mintLimit: null,
+          nftPayment: null,
+        },
+      },
+    ],
+  };
+
+  const { candyGuard, candyMachine } = await API.deploy(
+    t,
+    data,
+    payerPair,
+    fstTxHandler,
+    connection,
+  );
+
+  // mint (as a minter)
+
+  const {
+    fstTxHandler: minterHandler,
+    minterPair: minterKeypair,
+    connection: minterConnection,
+  } = await API.minter();
+
+  const [, mintForMinter] = await amman.genLabeledKeypair('Mint Account (minter)');
+  const { tx: minterMintTx } = await API.mint(
+    t,
+    candyGuard,
+    candyMachine,
+    minterKeypair,
+    mintForMinter,
+    minterHandler,
+    minterConnection,
+    null,
+    null,
+    null,
+  );
+
+  await minterMintTx.assertSuccess(t);
 });

@@ -5,7 +5,7 @@ use solana_program::{
 
 use crate::{
     errors::CandyGuardError,
-    state::{CandyGuard, CandyGuardData, DATA_OFFSET},
+    state::{CandyGuard, CandyGuardData, DATA_OFFSET, SEED},
 };
 
 pub fn update(ctx: Context<Update>, data: CandyGuardData) -> Result<()> {
@@ -80,7 +80,7 @@ pub struct Update<'info> {
     #[account(
         mut,
         has_one = authority,
-        seeds = [b"candy_guard", candy_guard.base.key().as_ref()],
+        seeds = [SEED, candy_guard.base.key().as_ref()],
         bump = candy_guard.bump
     )]
     pub candy_guard: Account<'info, CandyGuard>,

@@ -10,7 +10,7 @@ killStuckProcess();
 
 test('allowlist', async (t) => {
   const addresses: string[] = [];
-  
+
   // list of addresses in the allow list
 
   for (let i = 0; i < 9; i++) {
@@ -24,7 +24,7 @@ test('allowlist', async (t) => {
     connection: minterConnection,
   } = await API.minter();
   addresses.push(minterKeypair.publicKey.toString());
-  
+
   // creates the merkle tree
   const tree = new MerkleTree(addresses.map(keccak_256), keccak_256, { sortPairs: true });
 
@@ -44,7 +44,7 @@ test('allowlist', async (t) => {
       gatekeeper: null,
       endSettings: null,
       allowList: {
-        merkleRoot: [...tree.getRoot()]
+        merkleRoot: [...tree.getRoot()],
       },
       mintLimit: null,
       nftPayment: null,
@@ -67,8 +67,8 @@ test('allowlist', async (t) => {
 
   const vectorSizeBuffer = Buffer.alloc(4);
   u32.write(vectorSizeBuffer, 0, proof.length);
-    
-  const leafBuffers = proof.map(leaf => leaf.data);
+
+  const leafBuffers = proof.map((leaf) => leaf.data);
   // prepares the mint arguments with the merkle proof
   const mintArgs = Buffer.concat([vectorSizeBuffer, ...leafBuffers]);
 
@@ -82,7 +82,7 @@ test('allowlist', async (t) => {
     minterHandler,
     minterConnection,
     null,
-    mintArgs
+    mintArgs,
   );
 
   await minterMintTx.assertSuccess(t);
@@ -99,9 +99,8 @@ test('allowlist', async (t) => {
     fstTxHandler,
     connection,
     null,
-    mintArgs
+    mintArgs,
   );
 
   await payerMintTx.assertError(t, /Address not found/i);
-
 });

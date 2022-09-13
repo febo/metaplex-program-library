@@ -7,20 +7,19 @@
 
 import * as beet from '@metaplex-foundation/beet';
 import { GuardSet, guardSetBeet } from './GuardSet';
-import { Group, groupBeet } from './Group';
-export type CandyGuardData = {
-  default: GuardSet;
-  groups: beet.COption<Group[]>;
+export type Group = {
+  label: string;
+  guards: GuardSet;
 };
 
 /**
  * @category userTypes
  * @category generated
  */
-export const candyGuardDataBeet = new beet.FixableBeetArgsStruct<CandyGuardData>(
+export const groupBeet = new beet.FixableBeetArgsStruct<Group>(
   [
-    ['default', guardSetBeet],
-    ['groups', beet.coption(beet.array(groupBeet))],
+    ['label', beet.utf8String],
+    ['guards', guardSetBeet],
   ],
-  'CandyGuardData',
+  'Group',
 );

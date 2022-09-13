@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 
-use crate::state::{CandyGuard, CandyGuardData, DATA_OFFSET};
+use crate::state::{CandyGuard, CandyGuardData, DATA_OFFSET, SEED};
 
 pub fn initialize(ctx: Context<Initialize>, data: CandyGuardData) -> Result<()> {
     let candy_guard = &mut ctx.accounts.candy_guard;
@@ -21,7 +21,7 @@ pub struct Initialize<'info> {
         init,
         payer = payer,
         space = data.size(),
-        seeds = [b"candy_guard", base.key().as_ref()],
+        seeds = [SEED, base.key().as_ref()],
         bump
     )]
     pub candy_guard: Account<'info, CandyGuard>,

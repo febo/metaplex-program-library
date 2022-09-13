@@ -7,16 +7,20 @@ use mpl_candy_machine_core::CandyMachine;
 
 use crate::{
     guards::{CandyGuardError, EvaluationContext},
-    state::{CandyGuard, CandyGuardData, DATA_OFFSET},
+    state::{CandyGuard, CandyGuardData, DATA_OFFSET, SEED},
     utils::cmp_pubkeys,
 };
 
-pub fn mint<'info>(ctx: Context<'_, '_, '_, 'info, Mint<'info>>, mint_args: Vec<u8>) -> Result<()> {
+pub fn mint<'info>(
+    ctx: Context<'_, '_, '_, 'info, Mint<'info>>,
+    mint_args: Vec<u8>,
+    label: Option<String>,
+) -> Result<()> {
     let candy_guard = &ctx.accounts.candy_guard;
     let account_info = &candy_guard.to_account_info();
     // loads the active guard set
     let account_data = account_info.data.borrow();
-    let guard_set = CandyGuardData::active_set(&account_data[DATA_OFFSET..])?;
+    let guard_set = CandyGuardData::active_set(&account_data[DATA_OFFSET..], label)?;
 
     let conditions = guard_set.enabled_conditions();
     let process_error = |error: Error| -> Result<()> {
@@ -100,7 +104,7 @@ fn cpi_mint<'info>(ctx: &Context<'_, '_, '_, 'info, Mint<'info>>) -> Result<()> 
     let candy_guard = &ctx.accounts.candy_guard;
     // PDA signer for the transaction
     let seeds = [
-        b"candy_guard".as_ref(),
+        SEED,
         &candy_guard.base.to_bytes(),
         &[candy_guard.bump],
     ];
@@ -136,7 +140,7 @@ fn cpi_mint<'info>(ctx: &Context<'_, '_, '_, 'info, Mint<'info>>) -> Result<()> 
 
 #[derive(Accounts)]
 pub struct Mint<'info> {
-    #[account(seeds = [b"candy_guard", candy_guard.base.key().as_ref()], bump)]
+    #[account(seeds = [SEED, candy_guard.base.key().as_ref()], bump)]
     pub candy_guard: Account<'info, CandyGuard>,
     /// CHECK: account constraints checked in account trait
     #[account(address = mpl_candy_machine_core::id())]
