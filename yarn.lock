@@ -1501,7 +1501,7 @@ __metadata:
     "@metaplex-foundation/cusper": ^0.0.2
     "@metaplex-foundation/js": ^0.15.0
     "@metaplex-foundation/solita": ^0.15.2
-    "@solana/spl-token": ^0.3.4
+    "@solana/spl-token": ^0.3.5
     "@types/bn.js": ^5.1.0
     "@types/tape": ^4.13.2
     debug: ^4.3.4
@@ -1526,7 +1526,7 @@ __metadata:
     "@metaplex-foundation/cusper": ^0.0.2
     "@metaplex-foundation/js": ^0.15.0
     "@metaplex-foundation/solita": ^0.15.2
-    "@solana/spl-token": ^0.3.4
+    "@solana/spl-token": ^0.3.5
     "@types/bn.js": ^5.1.0
     esbuild: ^0.15.7
     eslint: ^8.3.0
@@ -1563,30 +1563,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@metaplex-foundation/mpl-token-metadata@^2.2.2, @metaplex-foundation/mpl-token-metadata@workspace:token-metadata/js":
-  version: 0.0.0-use.local
-  resolution: "@metaplex-foundation/mpl-token-metadata@workspace:token-metadata/js"
+"@metaplex-foundation/mpl-token-metadata@npm:^2.2.2":
+  version: 2.2.4
+  resolution: "@metaplex-foundation/mpl-token-metadata@npm:2.2.4"
   dependencies:
     "@metaplex-foundation/beet": ^0.4.0
     "@metaplex-foundation/beet-solana": ^0.3.0
     "@metaplex-foundation/cusper": ^0.0.2
-    "@metaplex-foundation/solita": ^0.12.1
     "@solana/spl-token": ^0.2.0
     "@solana/web3.js": ^1.35.1
-    "@types/bn.js": ^5.1.0
-    "@types/debug": ^4.1.7
-    "@types/tape": ^4.13.2
     bn.js: ^5.2.0
-    cpr: ^3.0.1
     debug: ^4.3.3
-    eslint: ^8.3.0
-    rimraf: ^3.0.2
-    spok: ^1.4.3
-    supports-color: ^9.2.1
-    tape: ^5.5.3
-    typescript: ^4.6.2
-  languageName: unknown
-  linkType: soft
+  checksum: edcf83555f5cbf6e3e246c5d3f49839aaf307ca037054dbeae036b086be529d56df0c4f5ae68c1c20079c5f8510d3af470d3e6940593fc9fe796018cba3fce20
+  languageName: node
+  linkType: hard
 
 "@metaplex-foundation/rustbin@npm:^0.3.0":
   version: 0.3.1
@@ -1597,26 +1587,6 @@ __metadata:
     text-table: ^0.2.0
     toml: ^3.0.0
   checksum: 042eb8cb729e886477efa885693dadcf31722c071f8adc5a49509483d846d4d359999b9f2beff9406f4dc9fa0a0f0bdb37be4b0c68426864f9f9f60b456cc74b
-  languageName: node
-  linkType: hard
-
-"@metaplex-foundation/solita@npm:^0.12.1":
-  version: 0.12.2
-  resolution: "@metaplex-foundation/solita@npm:0.12.2"
-  dependencies:
-    "@metaplex-foundation/beet": ^0.4.0
-    "@metaplex-foundation/beet-solana": ^0.3.0
-    "@metaplex-foundation/rustbin": ^0.3.0
-    "@solana/web3.js": ^1.36.0
-    camelcase: ^6.2.1
-    debug: ^4.3.3
-    js-sha256: ^0.9.0
-    prettier: ^2.5.1
-    snake-case: ^3.0.4
-    spok: ^1.4.3
-  bin:
-    solita: dist/src/cli/solita.js
-  checksum: 4545b2706e524f161b63e4ef8b779fbba1edb97a5d4c2bdbf11aa7a588ffd2453657cad5892ae5b2430c9a9ad9c3598d5a2a2945e4990b97017fd82b911fef31
   languageName: node
   linkType: hard
 
@@ -2058,16 +2028,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@solana/spl-token@npm:^0.3.4":
-  version: 0.3.4
-  resolution: "@solana/spl-token@npm:0.3.4"
+"@solana/spl-token@npm:^0.3.5":
+  version: 0.3.5
+  resolution: "@solana/spl-token@npm:0.3.5"
   dependencies:
     "@solana/buffer-layout": ^4.0.0
     "@solana/buffer-layout-utils": ^0.2.0
     buffer: ^6.0.3
   peerDependencies:
     "@solana/web3.js": ^1.47.4
-  checksum: 66f2301425a57008112053a82194a154e5e405f079a4ac35fe8a84014d8b229c509d7eeb4e3f296e3ea3eb8525d1688e6053a578908e773b0ecbb9b0ef82e531
+  checksum: 230c153b886c7dedb09fdd65c4fd71259d37f3c951ab6ea9c099aff875cc595fc9d44c74b4d7ffef59475f7edd7a8a00931bfec8ab2bd3141512ca3f6f828139
   languageName: node
   linkType: hard
 
@@ -2181,15 +2151,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/debug@npm:^4.1.7":
-  version: 4.1.7
-  resolution: "@types/debug@npm:4.1.7"
-  dependencies:
-    "@types/ms": "*"
-  checksum: 0a7b89d8ed72526858f0b61c6fd81f477853e8c4415bb97f48b1b5545248d2ae389931680b94b393b993a7cfe893537a200647d93defe6d87159b96812305adc
-  languageName: node
-  linkType: hard
-
 "@types/json-schema@npm:^7.0.9":
   version: 7.0.11
   resolution: "@types/json-schema@npm:7.0.11"
@@ -2208,13 +2169,6 @@ __metadata:
   version: 1.2.2
   resolution: "@types/minimist@npm:1.2.2"
   checksum: b8da83c66eb4aac0440e64674b19564d9d86c80ae273144db9681e5eeff66f238ade9515f5006ffbfa955ceff8b89ad2bd8ec577d7caee74ba101431fb07045d
-  languageName: node
-  linkType: hard
-
-"@types/ms@npm:*":
-  version: 0.7.31
-  resolution: "@types/ms@npm:0.7.31"
-  checksum: daadd354aedde024cce6f5aa873fefe7b71b22cd0e28632a69e8b677aeb48ae8caa1c60e5919bb781df040d116b01cb4316335167a3fc0ef6a63fa3614c0f6da
   languageName: node
   linkType: hard
 
@@ -3723,20 +3677,6 @@ __metadata:
     path-type: ^4.0.0
     yaml: ^1.10.0
   checksum: 4be63e7117955fd88333d7460e4c466a90f556df6ef34efd59034d2463484e339666c41f02b523d574a797ec61f4a91918c5b89a316db2ea2f834e0d2d09465b
-  languageName: node
-  linkType: hard
-
-"cpr@npm:^3.0.1":
-  version: 3.0.1
-  resolution: "cpr@npm:3.0.1"
-  dependencies:
-    graceful-fs: ^4.1.5
-    minimist: ^1.2.0
-    mkdirp: ~0.5.1
-    rimraf: ^2.5.4
-  bin:
-    cpr: ./bin/cpr
-  checksum: cd598eaed9241b7282e0d531dbf4b900ce19616fb01309738a8731dc5f268c188a7bcf52e6451faa8d937d41398519a4dee6f70ee013132fcf6087de8af98922
   languageName: node
   linkType: hard
 
@@ -5449,7 +5389,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graceful-fs@npm:^4.1.11, graceful-fs@npm:^4.1.15, graceful-fs@npm:^4.1.2, graceful-fs@npm:^4.1.5, graceful-fs@npm:^4.1.6, graceful-fs@npm:^4.2.0, graceful-fs@npm:^4.2.2, graceful-fs@npm:^4.2.3, graceful-fs@npm:^4.2.6":
+"graceful-fs@npm:^4.1.11, graceful-fs@npm:^4.1.15, graceful-fs@npm:^4.1.2, graceful-fs@npm:^4.1.6, graceful-fs@npm:^4.2.0, graceful-fs@npm:^4.2.2, graceful-fs@npm:^4.2.3, graceful-fs@npm:^4.2.6":
   version: 4.2.10
   resolution: "graceful-fs@npm:4.2.10"
   checksum: 3f109d70ae123951905d85032ebeae3c2a5a7a997430df00ea30df0e3a6c60cf6689b109654d6fdacd28810a053348c4d14642da1d075049e6be1ba5216218da
@@ -7099,7 +7039,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mkdirp@npm:^0.5.1, mkdirp@npm:^0.5.5, mkdirp@npm:~0.5.1":
+"mkdirp@npm:^0.5.1, mkdirp@npm:^0.5.5":
   version: 0.5.6
   resolution: "mkdirp@npm:0.5.6"
   dependencies:
@@ -8642,7 +8582,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rimraf@npm:^2.5.4, rimraf@npm:^2.6.3":
+"rimraf@npm:^2.6.3":
   version: 2.7.1
   resolution: "rimraf@npm:2.7.1"
   dependencies:
@@ -9428,13 +9368,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"supports-color@npm:^9.2.1":
-  version: 9.2.3
-  resolution: "supports-color@npm:9.2.3"
-  checksum: 47d598b70d2bac3cbce98950344134de17c2935f45e8ad6256cde78ebe5da440e240d9fa17c1146bd84b1c36f865239fef6c563d70068a8d901ca5a6c56960af
-  languageName: node
-  linkType: hard
-
 "supports-preserve-symlinks-flag@npm:^1.0.0":
   version: 1.0.0
   resolution: "supports-preserve-symlinks-flag@npm:1.0.0"
@@ -9475,7 +9408,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tape@npm:^5.5.0, tape@npm:^5.5.3":
+"tape@npm:^5.5.0":
   version: 5.6.0
   resolution: "tape@npm:5.6.0"
   dependencies:

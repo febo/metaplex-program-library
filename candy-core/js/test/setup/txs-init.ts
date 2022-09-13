@@ -15,8 +15,7 @@ import {
   TransactionInstruction,
 } from '@solana/web3.js';
 import {
-  createAssociatedTokenAccountInstruction,
-  createInitializeMintInstruction,
+  createAssociatedTokenAccountInstruction, createInitializeMint2Instruction,
   createMintToInstruction,
   MintLayout,
   TOKEN_PROGRAM_ID,
@@ -278,7 +277,7 @@ export class InitTransactions {
         programId: TOKEN_PROGRAM_ID,
       }),
     );
-    ixs.push(createInitializeMintInstruction(nftMint, 0, payer.publicKey, payer.publicKey));
+    ixs.push(createInitializeMint2Instruction(nftMint, 0, payer.publicKey, payer.publicKey));
     ixs.push(
       createAssociatedTokenAccountInstruction(
         payer.publicKey,

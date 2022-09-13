@@ -41,8 +41,7 @@ import {
 } from '../../src/generated';
 import { CandyMachine } from '../../../../candy-core/js/src/generated';
 import {
-  createAssociatedTokenAccountInstruction,
-  createInitializeMintInstruction,
+  createAssociatedTokenAccountInstruction, createInitializeMint2Instruction,
   createMintToInstruction,
   MintLayout,
   TOKEN_PROGRAM_ID,
@@ -256,7 +255,7 @@ export class InitTransactions {
         programId: TOKEN_PROGRAM_ID,
       }),
     );
-    ixs.push(createInitializeMintInstruction(mint.publicKey, 0, payer.publicKey, payer.publicKey));
+    ixs.push(createInitializeMint2Instruction(mint.publicKey, 0, payer.publicKey, payer.publicKey));
     ixs.push(
       createAssociatedTokenAccountInstruction(
         payer.publicKey,
