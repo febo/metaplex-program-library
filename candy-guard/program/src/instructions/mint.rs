@@ -103,11 +103,7 @@ fn validate<'info>(ctx: &Context<'_, '_, '_, 'info, Mint<'info>>) -> Result<()> 
 fn cpi_mint<'info>(ctx: &Context<'_, '_, '_, 'info, Mint<'info>>) -> Result<()> {
     let candy_guard = &ctx.accounts.candy_guard;
     // PDA signer for the transaction
-    let seeds = [
-        SEED,
-        &candy_guard.base.to_bytes(),
-        &[candy_guard.bump],
-    ];
+    let seeds = [SEED, &candy_guard.base.to_bytes(), &[candy_guard.bump]];
     let signer = [&seeds[..]];
     let candy_machine_program = ctx.accounts.candy_machine_program.to_account_info();
 

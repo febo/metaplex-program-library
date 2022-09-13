@@ -18,8 +18,8 @@ pub enum CandyGuardError {
     MissingRemainingAccount,
     #[msg("Numerical overflow error")]
     NumericalOverflowError,
-    #[msg("Missing group label")]
-    MissingGroupLabel,
+    #[msg("Missing required group label")]
+    RequiredGroupLabelNotFound,
     #[msg("Group not found")]
     GroupNotFound,
     #[msg("Group not found")]

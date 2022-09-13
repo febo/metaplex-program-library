@@ -784,8 +784,8 @@
     },
     {
       "code": 6008,
-      "name": "MissingGroupLabel",
-      "msg": "Missing group label"
+      "name": "RequiredGroupLabelNotFound",
+      "msg": "Missing required group label"
     },
     {
       "code": 6009,

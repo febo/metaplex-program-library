@@ -176,10 +176,12 @@ impl CandyGuardData {
                         cursor += GuardSet::bytes_count(features);
                     }
                 }
+                return err!(CandyGuardError::GroupNotFound);
             }
-            return err!(CandyGuardError::GroupNotFound);
+            // if we have groups, label is required
+            return err!(CandyGuardError::RequiredGroupLabelNotFound);
         } else if label.is_some() {
-            return err!(CandyGuardError::MissingGroupLabel);
+            return err!(CandyGuardError::GroupNotFound);
         }
 
         Ok(root)

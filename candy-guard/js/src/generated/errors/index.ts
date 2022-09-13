@@ -175,24 +175,27 @@ createErrorFromCodeLookup.set(0x1777, () => new NumericalOverflowErrorError());
 createErrorFromNameLookup.set('NumericalOverflowError', () => new NumericalOverflowErrorError());
 
 /**
- * MissingGroupLabel: 'Missing group label'
+ * RequiredGroupLabelNotFound: 'Missing required group label'
  *
  * @category Errors
  * @category generated
  */
-export class MissingGroupLabelError extends Error {
+export class RequiredGroupLabelNotFoundError extends Error {
   readonly code: number = 0x1778;
-  readonly name: string = 'MissingGroupLabel';
+  readonly name: string = 'RequiredGroupLabelNotFound';
   constructor() {
-    super('Missing group label');
+    super('Missing required group label');
     if (typeof Error.captureStackTrace === 'function') {
-      Error.captureStackTrace(this, MissingGroupLabelError);
+      Error.captureStackTrace(this, RequiredGroupLabelNotFoundError);
     }
   }
 }
 
-createErrorFromCodeLookup.set(0x1778, () => new MissingGroupLabelError());
-createErrorFromNameLookup.set('MissingGroupLabel', () => new MissingGroupLabelError());
+createErrorFromCodeLookup.set(0x1778, () => new RequiredGroupLabelNotFoundError());
+createErrorFromNameLookup.set(
+  'RequiredGroupLabelNotFound',
+  () => new RequiredGroupLabelNotFoundError(),
+);
 
 /**
  * GroupNotFound: 'Group not found'
