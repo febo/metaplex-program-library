@@ -11,10 +11,7 @@ use crate::{
     utils::cmp_pubkeys,
 };
 
-pub fn mint<'info>(
-    ctx: Context<'_, '_, '_, 'info, Mint<'info>>,
-    mint_args: Vec<u8>,
-) -> Result<()> {
+pub fn mint<'info>(ctx: Context<'_, '_, '_, 'info, Mint<'info>>, mint_args: Vec<u8>) -> Result<()> {
     let candy_guard = &ctx.accounts.candy_guard;
     let account_info = &candy_guard.to_account_info();
     // loads the active guard set
@@ -99,9 +96,7 @@ fn validate<'info>(ctx: &Context<'_, '_, '_, 'info, Mint<'info>>) -> Result<()> 
 }
 
 /// Send a mint transaction to the candy machine.
-fn cpi_mint<'info>(
-    ctx: &Context<'_, '_, '_, 'info, Mint<'info>>,
-) -> Result<()> {
+fn cpi_mint<'info>(ctx: &Context<'_, '_, '_, 'info, Mint<'info>>) -> Result<()> {
     let candy_guard = &ctx.accounts.candy_guard;
     // PDA signer for the transaction
     let seeds = [
