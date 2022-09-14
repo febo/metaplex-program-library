@@ -40,6 +40,6 @@ pub enum CandyError {
     CannotChangeSequentialIndexGeneration,
     #[msg("Collection public key mismatch")]
     CollectionKeyMismatch,
-    #[msg("Cannot change update authority if a collection mint is set")]
-    CannotChangeUpdateAuthority,
+    #[msg("Could not retrive config line data")]
+    CouldNotRetrieveConfigLineData,
 }

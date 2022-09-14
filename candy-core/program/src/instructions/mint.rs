@@ -286,7 +286,8 @@ pub fn get_config_line(
 
     let name = if name_length > 0 {
         let name_slice: &mut [u8] = &mut account_data[position..position + name_length];
-        unsafe { String::from_utf8_unchecked(name_slice.to_vec()) }
+        String::from_utf8(name_slice.to_vec())
+            .map_err(|_| CandyError::CouldNotRetrieveConfigLineData)?
     } else {
         EMPTY_STR.to_string()
     };
@@ -294,7 +295,8 @@ pub fn get_config_line(
     position += name_length;
     let uri = if uri_length > 0 {
         let uri_slice: &mut [u8] = &mut account_data[position..position + uri_length];
-        unsafe { String::from_utf8_unchecked(uri_slice.to_vec()) }
+        String::from_utf8(uri_slice.to_vec())
+            .map_err(|_| CandyError::CouldNotRetrieveConfigLineData)?
     } else {
         EMPTY_STR.to_string()
     };
