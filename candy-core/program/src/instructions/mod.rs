@@ -3,6 +3,7 @@ pub use initialize::*;
 pub use mint::*;
 pub use set_authority::*;
 pub use set_collection::*;
+pub use set_mint_authority::*;
 pub use update::*;
 pub use withdraw::*;
 
@@ -11,5 +12,6 @@ pub mod initialize;
 pub mod mint;
 pub mod set_authority;
 pub mod set_collection;
+pub mod set_mint_authority;
 pub mod update;
 pub mod withdraw;

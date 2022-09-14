@@ -1,22 +1,23 @@
 use anchor_lang::prelude::*;
-use mpl_candy_machine_core::CandyMachine;
+use mpl_candy_machine_core::{
+    cpi::{accounts::SetMintAuthority, set_mint_authority},
+    CandyMachine,
+};
 
 use crate::state::CandyGuard;
 
 pub fn unwrap(ctx: Context<Unwrap>) -> Result<()> {
     let candy_machine_program = ctx.accounts.candy_machine_program.to_account_info();
+    let candy_machine_authority = &ctx.accounts.candy_machine_authority;
 
-    let update_ix = mpl_candy_machine_core::cpi::accounts::SetAuthority {
+    let update_ix = SetMintAuthority {
         candy_machine: ctx.accounts.candy_machine.to_account_info(),
-        authority: ctx.accounts.authority.to_account_info(),
+        authority: candy_machine_authority.to_account_info(),
+        mint_authority: candy_machine_authority.to_account_info(),
     };
     let cpi_ctx = CpiContext::new(candy_machine_program, update_ix);
-    // candy machine update_authority CPI
-    mpl_candy_machine_core::cpi::set_authority(
-        cpi_ctx,
-        ctx.accounts.candy_machine_authority.key(),
-        ctx.accounts.candy_machine_authority.key(),
-    )?;
+    // candy machine set_mint_authority CPI
+    set_mint_authority(cpi_ctx)?;
 
     Ok(())
 }

@@ -1,21 +1,26 @@
 use anchor_lang::prelude::*;
-use mpl_candy_machine_core::CandyMachine;
+use mpl_candy_machine_core::{
+    cpi::{accounts::SetMintAuthority, set_mint_authority},
+    CandyMachine,
+};
 
-use crate::state::CandyGuard;
+use crate::state::{CandyGuard, SEED};
 
 pub fn wrap(ctx: Context<Wrap>) -> Result<()> {
+    let candy_guard = &ctx.accounts.candy_guard;
+    // PDA signer for the transaction
+    let seeds = [SEED, &candy_guard.base.to_bytes(), &[candy_guard.bump]];
+    let signer = [&seeds[..]];
+
     let candy_machine_program = ctx.accounts.candy_machine_program.to_account_info();
-    let update_ix = mpl_candy_machine_core::cpi::accounts::SetAuthority {
+    let update_ix = SetMintAuthority {
         candy_machine: ctx.accounts.candy_machine.to_account_info(),
-        authority: ctx.accounts.authority.to_account_info(),
+        authority: ctx.accounts.candy_machine_authority.to_account_info(),
+        mint_authority: candy_guard.to_account_info(),
     };
-    let cpi_ctx = CpiContext::new(candy_machine_program, update_ix);
-    // candy machine update_authority CPI
-    mpl_candy_machine_core::cpi::set_authority(
-        cpi_ctx,
-        ctx.accounts.authority.key(),
-        ctx.accounts.candy_guard.key(),
-    )?;
+    let cpi_ctx = CpiContext::new_with_signer(candy_machine_program, update_ix, &signer);
+    // candy machine set_mint_authority CPI
+    set_mint_authority(cpi_ctx)?;
 
     Ok(())
 }

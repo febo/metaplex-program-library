@@ -9,10 +9,7 @@ use crate::{
     ApproveCollectionAuthorityHelperAccounts,
 };
 
-pub fn initialize(
-    ctx: Context<Initialize>,
-    data: CandyMachineData,
-) -> Result<()> {
+pub fn initialize(ctx: Context<Initialize>, data: CandyMachineData) -> Result<()> {
     let candy_machine_account = &mut ctx.accounts.candy_machine;
 
     let mut candy_machine = CandyMachine {

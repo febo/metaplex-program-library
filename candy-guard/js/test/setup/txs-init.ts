@@ -29,6 +29,7 @@ import {
   CandyGuardData,
   createInitializeInstruction,
   createMintInstruction,
+  createUnwrapInstruction,
   createUpdateInstruction,
   createWrapInstruction,
   InitializeInstructionAccounts,
@@ -36,6 +37,7 @@ import {
   MintInstructionAccounts,
   MintInstructionArgs,
   PROGRAM_ID,
+  UnwrapInstructionAccounts,
   UpdateInstructionAccounts,
   UpdateInstructionArgs,
   WrapInstructionAccounts,
@@ -158,15 +160,38 @@ export class InitTransactions {
   ): Promise<{ tx: ConfirmedTransactionAssertablePromise }> {
     const accounts: WrapInstructionAccounts = {
       candyGuard,
+      authority: payer.publicKey,
       candyMachine: candyMachine,
       candyMachineProgram: CANDY_MACHINE_PROGRAM,
-      authority: payer.publicKey,
+      candyMachineAuthority: payer.publicKey,
     };
 
     const tx = new Transaction().add(createWrapInstruction(accounts));
 
     return {
       tx: handler.sendAndConfirmTransaction(tx, [payer], 'tx: Wrap'),
+    };
+  }
+
+  async unwrap(
+    t: Test,
+    candyGuard: PublicKey,
+    candyMachine: PublicKey,
+    payer: Keypair,
+    handler: PayerTransactionHandler,
+  ): Promise<{ tx: ConfirmedTransactionAssertablePromise }> {
+    const accounts: UnwrapInstructionAccounts = {
+      candyGuard,
+      authority: payer.publicKey,
+      candyMachine: candyMachine,
+      candyMachineProgram: CANDY_MACHINE_PROGRAM,
+      candyMachineAuthority: payer.publicKey,
+    };
+
+    const tx = new Transaction().add(createUnwrapInstruction(accounts));
+
+    return {
+      tx: handler.sendAndConfirmTransaction(tx, [payer], 'tx: Unwrap'),
     };
   }
 

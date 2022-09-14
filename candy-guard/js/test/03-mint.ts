@@ -9,7 +9,7 @@ const HELPER = new CandyMachineHelper();
 
 killStuckProcess();
 
-test('mint (CPI)', async (t) => {
+test.only('mint (CPI)', async (t) => {
   const { fstTxHandler, payerPair, connection } = await API.payer();
 
   // candy machine
@@ -72,7 +72,7 @@ test('mint (CPI)', async (t) => {
   // minting directly from the candy machine
 
   // as authority
-  const [, mintKeypair1] = await amman.genLabeledKeypair('Mint Account (authority)');
+  const [, mintKeypair1] = await amman.genLabeledKeypair('Mint Account 1 (authority)');
   const { tx: mintTx1 } = await HELPER.mint(
     t,
     candyMachine.publicKey,
@@ -100,10 +100,10 @@ test('mint (CPI)', async (t) => {
       minterConnection,
     );
     await mintTx2.assertSuccess(t);
-    t.fail('only authority is allowed to mint');
+    t.fail('only mint authority is allowed to mint');
   } catch {
     // we are expecting an error
-    t.pass('minter is not the candy machine authority');
+    t.pass('minter is not the candy machine mint authority');
   }
 
   // candy guard
@@ -141,12 +141,12 @@ test('mint (CPI)', async (t) => {
     fstTxHandler,
   );
 
-  await wrapTx.assertSuccess(t, [/SetAuthority/i]);
+  await wrapTx.assertSuccess(t, [/SetMintAuthority/i]);
 
   // minting from the candy machine should fail
 
   try {
-    const [, mintKeypair3] = await amman.genLabeledKeypair('CG Mint Account (authority)');
+    const [, mintKeypair3] = await amman.genLabeledKeypair('CG Mint Account 1 (authority)');
     const { tx: mintTx3 } = await HELPER.mint(
       t,
       candyMachine.publicKey,
@@ -164,7 +164,7 @@ test('mint (CPI)', async (t) => {
 
   // minting through the candy guard (as authority)
 
-  const [, mintKeypair4] = await amman.genLabeledKeypair('CG Mint Account (authority)');
+  const [, mintKeypair4] = await amman.genLabeledKeypair('CG Mint Account 2 (authority)');
   const { tx: mintTx4 } = await API.mint(
     t,
     address,
@@ -184,7 +184,7 @@ test('mint (CPI)', async (t) => {
     connection: minterConnection,
   } = await API.minter();
 
-  const [, mintKeypair5] = await amman.genLabeledKeypair('CG Mint Account (minter)');
+  const [, mintKeypair5] = await amman.genLabeledKeypair('CG Mint Account 1 (minter)');
   const { tx: mintTx5 } = await API.mint(
     t,
     address,
@@ -210,6 +210,32 @@ test('mint (CPI)', async (t) => {
     'Group 1',
   );
   await mintTx6.assertError(t, /Group not found/i);
+
+  // unwraps the candy machine
+
+  const { tx: unwrapTx } = await API.unwrap(
+    t,
+    address,
+    candyMachine.publicKey,
+    payerPair,
+    fstTxHandler,
+  );
+
+  await unwrapTx.assertSuccess(t, [/SetMintAuthority/i]);
+
+  // mints directly from the candy machine
+
+  // as authority
+  const [, mintKeypair7] = await amman.genLabeledKeypair('Mint Account 2 (authority)');
+  const { tx: mintTx7 } = await HELPER.mint(
+    t,
+    candyMachine.publicKey,
+    payerPair,
+    mintKeypair7,
+    fstTxHandler,
+    connection,
+  );
+  await mintTx7.assertSuccess(t);
 });
 
 test('mint from group', async (t) => {

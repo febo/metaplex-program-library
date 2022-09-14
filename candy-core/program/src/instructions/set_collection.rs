@@ -1,8 +1,7 @@
 use anchor_lang::prelude::*;
-use mpl_token_metadata::instruction::revoke_collection_authority;
 use mpl_token_metadata::{
     assertions::collection::assert_master_edition,
-    instruction::approve_collection_authority,
+    instruction::{approve_collection_authority, revoke_collection_authority},
     state::{Metadata, TokenMetadataAccount},
 };
 use solana_program::program::{invoke, invoke_signed};

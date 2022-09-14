@@ -176,6 +176,11 @@
           "isSigner": false
         },
         {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
           "name": "candyMachine",
           "isMut": true,
           "isSigner": false
@@ -186,7 +191,7 @@
           "isSigner": false
         },
         {
-          "name": "authority",
+          "name": "candyMachineAuthority",
           "isMut": false,
           "isSigner": true
         }
@@ -261,6 +266,11 @@
           "isSigner": false
         },
         {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
           "name": "candyMachine",
           "isMut": true,
           "isSigner": false
@@ -271,7 +281,7 @@
           "isSigner": false
         },
         {
-          "name": "authority",
+          "name": "candyMachineAuthority",
           "isMut": false,
           "isSigner": true
         }

@@ -36,19 +36,20 @@ pub mod candy_machine_core {
         instructions::mint(ctx)
     }
 
+    /// Set a new authority of the candy machine.
+    pub fn set_authority(ctx: Context<SetAuthority>, new_authority: Pubkey) -> Result<()> {
+        instructions::set_authority(ctx, new_authority)
+    }
+
     /// Set the collection mint for the candy machine.
     pub fn set_collection(ctx: Context<SetCollection>) -> Result<()> {
         instructions::set_collection(ctx)
     }
 
-    /// Set a new authority of the candy machine. Changing the authority has the
-    /// effect of changing who can mint.
-    pub fn set_authority(
-        ctx: Context<SetAuthority>,
-        new_authority: Pubkey,
-        new_mint_authority: Pubkey,
-    ) -> Result<()> {
-        instructions::set_authority(ctx, new_authority, new_mint_authority)
+    /// Set a new mint authority of the candy machine. Only the mint authority can mint
+    /// from the candy machine.
+    pub fn set_mint_authority(ctx: Context<SetMintAuthority>) -> Result<()> {
+        instructions::set_mint_authority(ctx)
     }
 
     /// Update the candy machine configuration.

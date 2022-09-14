@@ -16,9 +16,7 @@ use crate::{
     CandyError, CandyMachine, ConfigLine,
 };
 
-pub fn mint<'info>(
-    ctx: Context<'_, '_, '_, 'info, Mint<'info>>,
-) -> Result<()> {
+pub fn mint<'info>(ctx: Context<'_, '_, '_, 'info, Mint<'info>>) -> Result<()> {
     // (1) validation
 
     if !ctx.accounts.nft_metadata.data_is_empty() {
