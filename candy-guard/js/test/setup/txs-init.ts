@@ -394,7 +394,7 @@ export class InitTransactions {
 
     const { tx: wrapTx } = await this.wrap(t, address, candyMachine.publicKey, payer, handler);
 
-    await wrapTx.assertSuccess(t, [/SetAuthority/i]);
+    await wrapTx.assertSuccess(t, [/SetMintAuthority/i]);
 
     return { candyGuard: address, candyMachine: candyMachine.publicKey };
   }

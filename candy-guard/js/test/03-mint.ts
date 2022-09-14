@@ -9,7 +9,7 @@ const HELPER = new CandyMachineHelper();
 
 killStuckProcess();
 
-test.only('mint (CPI)', async (t) => {
+test('mint (CPI)', async (t) => {
   const { fstTxHandler, payerPair, connection } = await API.payer();
 
   // candy machine

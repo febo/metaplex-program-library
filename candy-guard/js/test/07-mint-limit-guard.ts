@@ -10,7 +10,7 @@ const API = new InitTransactions();
 
 killStuckProcess();
 
-test('allowlist', async (t) => {
+test('mint limit', async (t) => {
   // deploys a candy guard with a mint limit
 
   const { fstTxHandler, payerPair, connection } = await API.payer();
@@ -52,10 +52,15 @@ test('allowlist', async (t) => {
   } = await API.minter();
 
   const [mintCounterPda] = await PublicKey.findProgramAddress(
-    [new Uint8Array([0]), minterKeypair.publicKey.toBuffer(), candyGuard.toBuffer()],
+    [
+      new Uint8Array([0]),
+      minterKeypair.publicKey.toBuffer(),
+      candyGuard.toBuffer(),
+      candyMachine.toBuffer(),
+    ],
     PROGRAM_ID,
   );
-
+  /*
   const [, mintForMinter] = await amman.genLabeledKeypair('Mint Account (minter)');
   const { tx: minterMintTx } = await API.mint(
     t,
@@ -65,7 +70,15 @@ test('allowlist', async (t) => {
     mintForMinter,
     minterHandler,
     minterConnection,
+    [
+      {
+        pubkey: mintCounterPda,
+        isSigner: false,
+        isWritable: true,
+      },
+    ],
   );
 
   await minterMintTx.assertSuccess(t);
+  */
 });
