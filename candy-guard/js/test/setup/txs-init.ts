@@ -354,7 +354,7 @@ export class InitTransactions {
       hiddenSettings: null,
     };
 
-    const { tx: createTxCM } = await HELPER.create(
+    const { tx: createTxCM } = await HELPER.initialize(
       t,
       payer,
       candyMachine,
