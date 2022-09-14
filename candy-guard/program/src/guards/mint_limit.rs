@@ -1,3 +1,5 @@
+use solana_program::{program::invoke_signed, system_instruction};
+
 use super::*;
 use crate::utils::assert_keys_equal;
 
@@ -56,10 +58,15 @@ impl Condition for MintLimit {
 
         assert_keys_equal(allowance_account.key, &pda)?;
 
-        let account_data = allowance_account.data.borrow();
-        let mint_counter = MintCounter::try_from_slice(&account_data)?;
+        if !allowance_account.data_is_empty() {
+            let account_data = allowance_account.data.borrow();
+            let mint_counter = MintCounter::try_from_slice(&account_data)?;
 
-        if mint_counter.count >= self.limit {
+            if mint_counter.count >= self.limit {
+                return err!(CandyGuardError::AllowedMintLimitReached);
+            }
+        } else if self.limit < 1 {
+            // sanity check: if the limit is set to less we cannot proceed
             return err!(CandyGuardError::AllowedMintLimitReached);
         }
 
@@ -78,11 +85,41 @@ impl Condition for MintLimit {
 
         let user = ctx.accounts.payer.key();
         let candy_guard_key = &ctx.accounts.candy_guard.key();
+        let candy_machine_key = &ctx.accounts.candy_machine.key();
 
-        let seeds = [&[self.id], user.as_ref(), candy_guard_key.as_ref()];
-        let (pda, _) = Pubkey::find_program_address(&seeds, &crate::ID);
+        if allowance_account.data_is_empty() {
+            let seeds = [
+                &[self.id],
+                user.as_ref(),
+                candy_guard_key.as_ref(),
+                candy_machine_key.as_ref(),
+            ];
+            let (pda, bump) = Pubkey::find_program_address(&seeds, &crate::ID);
 
-        assert_keys_equal(allowance_account.key, &pda)?;
+            let rent = Rent::get()?;
+            let signer = [
+                &[self.id],
+                user.as_ref(),
+                candy_guard_key.as_ref(),
+                candy_machine_key.as_ref(),
+                &[bump],
+            ];
+
+            invoke_signed(
+                &system_instruction::create_account(
+                    &ctx.accounts.payer.key,
+                    &pda,
+                    rent.minimum_balance(std::mem::size_of::<u32>()),
+                    std::mem::size_of::<u32>() as u64,
+                    &crate::ID,
+                ),
+                &[
+                    ctx.accounts.payer.to_account_info(),
+                    allowance_account.to_account_info(),
+                ],
+                &[&signer],
+            )?;
+        }
 
         let mut account_data = allowance_account.try_borrow_mut_data()?;
         let mut mint_counter = MintCounter::try_from_slice(&account_data)?;
