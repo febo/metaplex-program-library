@@ -44,8 +44,14 @@ impl Condition for MintLimit {
 
         let user = ctx.accounts.payer.key();
         let candy_guard_key = &ctx.accounts.candy_guard.key();
+        let candy_machine_key = &ctx.accounts.candy_machine.key();
 
-        let seeds = [&[self.id], user.as_ref(), candy_guard_key.as_ref()];
+        let seeds = [
+            &[self.id],
+            user.as_ref(),
+            candy_guard_key.as_ref(),
+            candy_machine_key.as_ref(),
+        ];
         let (pda, _) = Pubkey::find_program_address(&seeds, &crate::ID);
 
         assert_keys_equal(allowance_account.key, &pda)?;
