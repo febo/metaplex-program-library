@@ -1347,6 +1347,62 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@lorisleiva/mpl-candy-guard@workspace:candy-guard/js":
+  version: 0.0.0-use.local
+  resolution: "@lorisleiva/mpl-candy-guard@workspace:candy-guard/js"
+  dependencies:
+    "@metaplex-foundation/amman": ^0.11.1
+    "@metaplex-foundation/amman-client": ^0.2.2
+    "@metaplex-foundation/beet": ^0.4.0
+    "@metaplex-foundation/beet-solana": ^0.3.0
+    "@metaplex-foundation/cusper": ^0.0.2
+    "@metaplex-foundation/js": ^0.15.0
+    "@metaplex-foundation/mpl-auction-house": ^2.3.0
+    "@metaplex-foundation/mpl-candy-machine": ^4.6.0
+    "@metaplex-foundation/mpl-core": ^0.6.1
+    "@metaplex-foundation/mpl-token-metadata": ^2.2.4
+    "@metaplex-foundation/solita": ^0.12.0
+    "@noble/hashes": ^1.1.2
+    "@solana/spl-token": ^0.2.0
+    "@types/bn.js": ^5.1.0
+    "@types/tape": ^4.13.2
+    debug: ^4.3.4
+    eslint: ^8.3.0
+    merkletreejs: ^0.2.32
+    prettier: ^2.5.1
+    rimraf: ^3.0.2
+    spok: ^1.4.3
+    tap-spec: ^5.0.0
+    tape: ^5.5.0
+    typedoc: ^0.22.11
+    typescript: ^4.6.2
+  languageName: unknown
+  linkType: soft
+
+"@lorisleiva/mpl-candy-machine-core@workspace:candy-core/js":
+  version: 0.0.0-use.local
+  resolution: "@lorisleiva/mpl-candy-machine-core@workspace:candy-core/js"
+  dependencies:
+    "@metaplex-foundation/amman": ^0.11.0
+    "@metaplex-foundation/beet": ^0.4.0
+    "@metaplex-foundation/beet-solana": ^0.3.0
+    "@metaplex-foundation/cusper": ^0.0.2
+    "@metaplex-foundation/js": ^0.15.0
+    "@metaplex-foundation/solita": ^0.12.0
+    "@solana/spl-token": ^0.2.0
+    "@types/bn.js": ^5.1.0
+    esbuild: ^0.15.7
+    eslint: ^8.3.0
+    prettier: ^2.5.1
+    rimraf: ^3.0.2
+    spok: ^1.4.3
+    tap-spec: ^5.0.0
+    tape: ^5.5.0
+    typedoc: ^0.22.11
+    typescript: ^4.6.2
+  languageName: unknown
+  linkType: soft
+
 "@metaplex-foundation/amman-client@npm:^0.2.0, @metaplex-foundation/amman-client@npm:^0.2.2":
   version: 0.2.2
   resolution: "@metaplex-foundation/amman-client@npm:0.2.2"
@@ -1489,62 +1545,6 @@ __metadata:
   checksum: 00d8497d8055f603dcad4baad362cea2baed49005cba1309f51245b797a0a6b4a93321ec506f116f87397d5f2367f999a516808dcb27569d812e91d027be059a
   languageName: node
   linkType: hard
-
-"@metaplex-foundation/mpl-candy-guard@workspace:candy-guard/js":
-  version: 0.0.0-use.local
-  resolution: "@metaplex-foundation/mpl-candy-guard@workspace:candy-guard/js"
-  dependencies:
-    "@metaplex-foundation/amman": ^0.11.1
-    "@metaplex-foundation/amman-client": ^0.2.2
-    "@metaplex-foundation/beet": ^0.4.0
-    "@metaplex-foundation/beet-solana": ^0.3.0
-    "@metaplex-foundation/cusper": ^0.0.2
-    "@metaplex-foundation/js": ^0.15.0
-    "@metaplex-foundation/mpl-auction-house": ^2.3.0
-    "@metaplex-foundation/mpl-candy-machine": ^4.6.0
-    "@metaplex-foundation/mpl-core": ^0.6.1
-    "@metaplex-foundation/mpl-token-metadata": ^2.2.4
-    "@metaplex-foundation/solita": ^0.12.0
-    "@noble/hashes": ^1.1.2
-    "@solana/spl-token": ^0.2.0
-    "@types/bn.js": ^5.1.0
-    "@types/tape": ^4.13.2
-    debug: ^4.3.4
-    eslint: ^8.3.0
-    merkletreejs: ^0.2.32
-    prettier: ^2.5.1
-    rimraf: ^3.0.2
-    spok: ^1.4.3
-    tap-spec: ^5.0.0
-    tape: ^5.5.0
-    typedoc: ^0.22.11
-    typescript: ^4.6.2
-  languageName: unknown
-  linkType: soft
-
-"@metaplex-foundation/mpl-candy-machine-core@workspace:candy-core/js":
-  version: 0.0.0-use.local
-  resolution: "@metaplex-foundation/mpl-candy-machine-core@workspace:candy-core/js"
-  dependencies:
-    "@metaplex-foundation/amman": ^0.11.0
-    "@metaplex-foundation/beet": ^0.4.0
-    "@metaplex-foundation/beet-solana": ^0.3.0
-    "@metaplex-foundation/cusper": ^0.0.2
-    "@metaplex-foundation/js": ^0.15.0
-    "@metaplex-foundation/solita": ^0.12.0
-    "@solana/spl-token": ^0.2.0
-    "@types/bn.js": ^5.1.0
-    esbuild: ^0.15.7
-    eslint: ^8.3.0
-    prettier: ^2.5.1
-    rimraf: ^3.0.2
-    spok: ^1.4.3
-    tap-spec: ^5.0.0
-    tape: ^5.5.0
-    typedoc: ^0.22.11
-    typescript: ^4.6.2
-  languageName: unknown
-  linkType: soft
 
 "@metaplex-foundation/mpl-candy-machine@npm:^4.4.1, @metaplex-foundation/mpl-candy-machine@npm:^4.6.0":
   version: 4.6.0
