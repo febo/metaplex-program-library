@@ -46,14 +46,15 @@
     "@metaplex-foundation/beet": "^0.4.0",
     "@metaplex-foundation/beet-solana": "^0.3.0",
     "@metaplex-foundation/cusper": "^0.0.2",
-    "@solana/spl-token": "^0.2.0",
-    "esbuild": "^0.15.7"
+    "@solana/web3.js": "^1.56.2",
+    "bn.js": "^5.2.0"
   },
   "devDependencies": {
     "@metaplex-foundation/amman": "^0.11.0",
     "@metaplex-foundation/js": "^0.15.0",
     "@metaplex-foundation/solita": "^0.12.0",
     "@types/bn.js": "^5.1.0",
+    "esbuild": "^0.15.7",
     "eslint": "^8.3.0",
     "prettier": "^2.5.1",
     "rimraf": "^3.0.2",
