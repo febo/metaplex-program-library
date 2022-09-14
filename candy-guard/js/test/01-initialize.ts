@@ -47,7 +47,7 @@ test('initialize: new candy guard (no guards)', async (t) => {
 
   // parse the guards configuration
   const accountInfo = await connection.getAccountInfo(address);
-  const candyGuardData = parseData(accountInfo.data.subarray(DATA_OFFSET));
+  const candyGuardData = parseData(accountInfo!.data.subarray(DATA_OFFSET));
 
   spok(t, candyGuardData, data);
 });

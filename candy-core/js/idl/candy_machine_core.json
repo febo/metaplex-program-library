@@ -56,11 +56,6 @@
           "isSigner": false
         },
         {
-          "name": "mintAuthority",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
           "name": "payer",
           "isMut": false,
           "isSigner": true
@@ -215,6 +210,30 @@
       "args": []
     },
     {
+      "name": "setAuthority",
+      "docs": [
+        "Set a new authority of the candy machine."
+      ],
+      "accounts": [
+        {
+          "name": "candyMachine",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "newAuthority",
+          "type": "publicKey"
+        }
+      ]
+    },
+    {
       "name": "setCollection",
       "docs": [
         "Set the collection mint for the candy machine."
@@ -299,10 +318,10 @@
       "args": []
     },
     {
-      "name": "setAuthority",
+      "name": "setMintAuthority",
       "docs": [
-        "Set a new authority of the candy machine. Changing the authority has the",
-        "effect of changing who can mint."
+        "Set a new mint authority of the candy machine. Only the mint authority can mint",
+        "from the candy machine."
       ],
       "accounts": [
         {
@@ -314,18 +333,14 @@
           "name": "authority",
           "isMut": false,
           "isSigner": true
-        }
-      ],
-      "args": [
-        {
-          "name": "newAuthority",
-          "type": "publicKey"
         },
         {
-          "name": "newMintAuthority",
-          "type": "publicKey"
+          "name": "mintAuthority",
+          "isMut": false,
+          "isSigner": true
         }
-      ]
+      ],
+      "args": []
     },
     {
       "name": "update",

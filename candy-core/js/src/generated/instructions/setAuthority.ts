@@ -16,7 +16,6 @@ import * as beet from '@metaplex-foundation/beet';
  */
 export type SetAuthorityInstructionArgs = {
   newAuthority: web3.PublicKey;
-  newMintAuthority: web3.PublicKey;
 };
 /**
  * @category Instructions
@@ -31,7 +30,6 @@ export const setAuthorityStruct = new beet.BeetArgsStruct<
   [
     ['instructionDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)],
     ['newAuthority', beetSolana.publicKey],
-    ['newMintAuthority', beetSolana.publicKey],
   ],
   'SetAuthorityInstructionArgs',
 );

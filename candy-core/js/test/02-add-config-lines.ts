@@ -33,7 +33,7 @@ test('add_config_lines', async (t) => {
     hiddenSettings: null,
   };
 
-  const { tx: transaction, candyMachine: address } = await init.create(
+  const { tx: transaction, candyMachine: address } = await init.initialize(
     t,
     payerPair,
     data,
@@ -85,7 +85,7 @@ test('add_config_lines (hidden settings)', async (t) => {
     },
   };
 
-  const { tx: transaction, candyMachine: address } = await init.create(
+  const { tx: transaction, candyMachine: address } = await init.initialize(
     t,
     payerPair,
     data,

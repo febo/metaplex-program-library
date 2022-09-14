@@ -52,7 +52,7 @@ export const CANDY_MACHINE_PROGRAM = PROGRAM_ID;
 export const METAPLEX_PROGRAM_ID = new PublicKey('metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s');
 
 export class CandyMachineHelper {
-  async create(
+  async initialize(
     t: Test,
     payer: Keypair,
     candyMachine: Keypair,
@@ -91,7 +91,6 @@ export class CandyMachineHelper {
     const accounts: InitializeInstructionAccounts = {
       authorityPda,
       collectionUpdateAuthority: collection.updateAuthorityAddress,
-      mintAuthority: payer.publicKey,
       candyMachine: candyMachine.publicKey,
       authority: payer.publicKey,
       payer: payer.publicKey,

@@ -36,7 +36,7 @@ test('initialize: new candy machine', async (t) => {
     hiddenSettings: null,
   };
 
-  const { tx: transaction, candyMachine: address } = await init.create(
+  const { tx: transaction, candyMachine: address } = await init.initialize(
     t,
     payerPair,
     data,
@@ -89,7 +89,7 @@ test('initialize: new candy machine (hidden settings)', async (t) => {
     },
   };
 
-  const { tx: transaction, candyMachine: address } = await init.create(
+  const { tx: transaction, candyMachine: address } = await init.initialize(
     t,
     payerPair,
     data,

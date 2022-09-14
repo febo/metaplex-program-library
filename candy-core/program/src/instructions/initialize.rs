@@ -16,7 +16,7 @@ pub fn initialize(ctx: Context<Initialize>, data: CandyMachineData) -> Result<()
         data,
         features: 0,
         authority: ctx.accounts.authority.key(),
-        mint_authority: ctx.accounts.mint_authority.key(),
+        mint_authority: ctx.accounts.authority.key(),
         collection_mint: ctx.accounts.collection_mint.key(),
         items_redeemed: 0,
     };
@@ -76,8 +76,6 @@ pub struct Initialize<'info> {
     authority: UncheckedAccount<'info>,
     // The update authority is used when retain authority is true (in most cases it will
     // be the same as the authority)
-    /// CHECK: update authority can be any account and is not written to or read
-    mint_authority: UncheckedAccount<'info>,
     // payer of the transaction
     payer: Signer<'info>,
     /// CHECK: account checked in CPI

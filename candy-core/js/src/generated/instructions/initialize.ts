@@ -39,7 +39,6 @@ export const initializeStruct = new beet.FixableBeetArgsStruct<
  * @property [_writable_] candyMachine
  * @property [_writable_] authorityPda
  * @property [] authority
- * @property [] mintAuthority
  * @property [**signer**] payer
  * @property [] collectionMetadata
  * @property [] collectionMint
@@ -55,7 +54,6 @@ export type InitializeInstructionAccounts = {
   candyMachine: web3.PublicKey;
   authorityPda: web3.PublicKey;
   authority: web3.PublicKey;
-  mintAuthority: web3.PublicKey;
   payer: web3.PublicKey;
   collectionMetadata: web3.PublicKey;
   collectionMint: web3.PublicKey;
@@ -101,11 +99,6 @@ export function createInitializeInstruction(
     },
     {
       pubkey: accounts.authority,
-      isWritable: false,
-      isSigner: false,
-    },
-    {
-      pubkey: accounts.mintAuthority,
       isWritable: false,
       isSigner: false,
     },

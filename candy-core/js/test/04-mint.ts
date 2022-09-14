@@ -33,7 +33,7 @@ test.only('mint (authority)', async (t) => {
     hiddenSettings: null,
   };
 
-  const { tx: transaction, candyMachine: address } = await API.create(
+  const { tx: transaction, candyMachine: address } = await API.initialize(
     t,
     payerPair,
     data,
@@ -90,7 +90,7 @@ test('mint (minter)', async (t) => {
     hiddenSettings: null,
   };
 
-  const { tx: transaction, candyMachine: address } = await API.create(
+  const { tx: transaction, candyMachine: address } = await API.initialize(
     t,
     payerPair,
     data,

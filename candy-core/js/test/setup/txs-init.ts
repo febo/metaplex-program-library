@@ -94,7 +94,7 @@ export class InitTransactions {
     };
   }
 
-  async create(
+  async initialize(
     t: Test,
     payer: Keypair,
     data: program.CandyMachineData,
@@ -133,7 +133,6 @@ export class InitTransactions {
     const accounts: program.InitializeInstructionAccounts = {
       authorityPda,
       collectionUpdateAuthority: collection.updateAuthorityAddress,
-      mintAuthority: payer.publicKey,
       candyMachine: candyMachine.publicKey,
       authority: payer.publicKey,
       payer: payer.publicKey,
