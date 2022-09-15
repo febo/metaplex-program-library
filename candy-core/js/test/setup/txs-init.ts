@@ -228,7 +228,7 @@ export class InitTransactions {
     payer: Keypair,
     handler: PayerTransactionHandler,
     connection: Connection,
-  ): Promise<{ tx: ConfirmedTransactionAssertablePromise }> {
+  ): Promise<{ tx: ConfirmedTransactionAssertablePromise; mintAddress: PublicKey }> {
     const candyMachineObject = await CandyMachine.fromAccountAddress(connection, candyMachine);
     // mint address
     const [nftMint, mintPair] = await this.getKeypair('mint');
@@ -293,7 +293,7 @@ export class InitTransactions {
     ixs.push(program.createMintInstruction(accounts));
     const tx = new Transaction().add(...ixs);
 
-    return { tx: handler.sendAndConfirmTransaction(tx, [payer, mintPair], 'tx: Mint') };
+    return { tx: handler.sendAndConfirmTransaction(tx, [payer, mintPair], 'tx: Mint'), mintAddress: nftMint };
   }
 
   async withdraw(
