@@ -144,7 +144,7 @@ export const mintCounterBeet = new beet.BeetStruct<
 >(
   [
     ['accountDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)],
-    ['count', beet.u32],
+    ['count', beet.u16],
   ],
   MintCounter.fromArgs,
   'MintCounter',

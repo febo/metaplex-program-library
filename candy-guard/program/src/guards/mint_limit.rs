@@ -9,20 +9,20 @@ pub struct MintLimit {
     /// Unique identifier of the mint limit.
     pub id: u8,
     /// Limit of mints per individual address.
-    pub limit: u32,
+    pub limit: u16,
 }
 
 /// PDA to track the number of mints for an individual address.
 #[account]
 #[derive(Default)]
 pub struct MintCounter {
-    pub count: u32,
+    pub count: u16,
 }
 
 impl Guard for MintLimit {
     fn size() -> usize {
         1   // id
-        + 4 // limit
+        + 2 // limit
     }
 
     fn mask() -> u64 {
@@ -38,7 +38,7 @@ impl Condition for MintLimit {
         _guard_set: &GuardSet,
         evaluation_context: &mut EvaluationContext,
     ) -> Result<()> {
-        let allowance_account = Self::get_account_info(ctx, evaluation_context.account_cursor)?;
+        let counter = Self::get_account_info(ctx, evaluation_context.account_cursor)?;
         evaluation_context
             .indices
             .insert("mintlimit_index", evaluation_context.account_cursor);
@@ -56,17 +56,17 @@ impl Condition for MintLimit {
         ];
         let (pda, _) = Pubkey::find_program_address(&seeds, &crate::ID);
 
-        assert_keys_equal(allowance_account.key, &pda)?;
+        assert_keys_equal(counter.key, &pda)?;
 
-        if !allowance_account.data_is_empty() {
-            let account_data = allowance_account.data.borrow();
+        if !counter.data_is_empty() {
+            let account_data = counter.data.borrow();
             let mint_counter = MintCounter::try_from_slice(&account_data)?;
 
             if mint_counter.count >= self.limit {
                 return err!(CandyGuardError::AllowedMintLimitReached);
             }
         } else if self.limit < 1 {
-            // sanity check: if the limit is set to less we cannot proceed
+            // sanity check: if the limit is set to less than 1 we cannot proceed
             return err!(CandyGuardError::AllowedMintLimitReached);
         }
 
@@ -80,14 +80,14 @@ impl Condition for MintLimit {
         _guard_set: &GuardSet,
         evaluation_context: &mut EvaluationContext,
     ) -> Result<()> {
-        let allowance_account =
+        let counter =
             Self::get_account_info(ctx, evaluation_context.indices["mintlimit_index"])?;
 
         let user = ctx.accounts.payer.key();
         let candy_guard_key = &ctx.accounts.candy_guard.key();
         let candy_machine_key = &ctx.accounts.candy_machine.key();
 
-        if allowance_account.data_is_empty() {
+        if counter.data_is_empty() {
             let seeds = [
                 &[self.id],
                 user.as_ref(),
@@ -109,19 +109,19 @@ impl Condition for MintLimit {
                 &system_instruction::create_account(
                     &ctx.accounts.payer.key,
                     &pda,
-                    rent.minimum_balance(std::mem::size_of::<u32>()),
-                    std::mem::size_of::<u32>() as u64,
+                    rent.minimum_balance(std::mem::size_of::<u16>()),
+                    std::mem::size_of::<u16>() as u64,
                     &crate::ID,
                 ),
                 &[
                     ctx.accounts.payer.to_account_info(),
-                    allowance_account.to_account_info(),
+                    counter.to_account_info(),
                 ],
                 &[&signer],
             )?;
         }
 
-        let mut account_data = allowance_account.try_borrow_mut_data()?;
+        let mut account_data = counter.try_borrow_mut_data()?;
         let mut mint_counter = MintCounter::try_from_slice(&account_data)?;
         mint_counter.count += 1;
         // saves the changes back to the pda

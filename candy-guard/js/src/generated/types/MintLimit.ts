@@ -18,7 +18,7 @@ export type MintLimit = {
 export const mintLimitBeet = new beet.BeetArgsStruct<MintLimit>(
   [
     ['id', beet.u8],
-    ['limit', beet.u32],
+    ['limit', beet.u16],
   ],
   'MintLimit',
 );
