@@ -1594,7 +1594,7 @@ createErrorFromNameLookup.set(
 );
 
 /**
- * CollectionCannotBeVerifiedInThisInstruction: 'Cannont Verify Collection in this Instruction'
+ * CollectionCannotBeVerifiedInThisInstruction: 'Cannot Verify Collection in this Instruction'
  *
  * @category Errors
  * @category generated
@@ -1603,7 +1603,7 @@ export class CollectionCannotBeVerifiedInThisInstructionError extends Error {
   readonly code: number = 0x4a;
   readonly name: string = 'CollectionCannotBeVerifiedInThisInstruction';
   constructor() {
-    super('Cannont Verify Collection in this Instruction');
+    super('Cannot Verify Collection in this Instruction');
     if (typeof Error.captureStackTrace === 'function') {
       Error.captureStackTrace(this, CollectionCannotBeVerifiedInThisInstructionError);
     }
